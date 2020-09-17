@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Request\Interfaces\**" />
+    <EmbeddedResource Remove="Request\Interfaces\**" />
+    <None Remove="Request\Interfaces\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Bot.Builder" Version="4.10.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Philips.Chatbots.Actions\Philips.Chatbots.Actions.csproj" />
+    <ProjectReference Include="..\Philips.Chatbots.Common\Philips.Chatbots.Common.csproj" />
+    <ProjectReference Include="..\Philips.Chatbots.Data.Models\Philips.Chatbots.Data.Models.csproj" />
+    <ProjectReference Include="..\Philips.Chatbots.Database\Philips.Chatbots.Database.csproj" />
+    <ProjectReference Include="..\Philips.Chatbots.ML\Philips.Chatbots.ML.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UserSecretsId>215d4f10-fa34-4522-97bb-c01577609881</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.10.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore" Version="3.1.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Philips.Chatbots.Common\Philips.Chatbots.Common.csproj" />
+    <ProjectReference Include="..\Philips.Chatbots.Database\Philips.Chatbots.Database.csproj" />
+    <ProjectReference Include="..\Philips.Chatbots.Engine\Philips.Chatbots.Engine.csproj" />
+  </ItemGroup>
+</Project>

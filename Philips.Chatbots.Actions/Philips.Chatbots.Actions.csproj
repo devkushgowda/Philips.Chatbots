@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Philips.Chatbots.Common\Philips.Chatbots.Common.csproj" />
+    <ProjectReference Include="..\Philips.Chatbots.Data.Models\Philips.Chatbots.Data.Models.csproj" />
+    <ProjectReference Include="..\Philips.Chatbots.Database\Philips.Chatbots.Database.csproj" />
+  </ItemGroup>
+
+</Project>
