@@ -37,6 +37,7 @@ namespace Philips.Chatbots.Data.Models.Interfaces
         Invalid = -1,
         False = 0,
         True = 1,
+        Skipped = 2,
         Empty
     }
 

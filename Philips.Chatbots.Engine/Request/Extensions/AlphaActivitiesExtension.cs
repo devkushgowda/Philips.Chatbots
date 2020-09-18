@@ -1,10 +1,18 @@
-﻿using Microsoft.Bot.Builder;
+﻿using log4net;
+using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
+using Philips.Chatbots.Common.Logging;
 using Philips.Chatbots.Data.Models.Interfaces;
 using Philips.Chatbots.Data.Models.Neural;
+using Philips.Chatbots.Database.Extension;
+using Philips.Chatbots.Engine.Requst.Handlers;
 using Philips.Chatbots.Engine.Session;
+using Philips.Chatbots.Session;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using static Philips.Chatbots.Database.Common.DbAlias;
+
 
 namespace Philips.Chatbots.Engine.Request.Extensions
 {
@@ -13,6 +21,7 @@ namespace Philips.Chatbots.Engine.Request.Extensions
     /// </summary>
     public static class AlphaActivitiesExtension
     {
+        public static readonly ILog logger = LogHelper.GetLogger<AlphaRequestHandler>();
         /// <summary>
         /// Handles resuest flow for neural resource nodes.
         /// </summary>
@@ -20,9 +29,35 @@ namespace Philips.Chatbots.Engine.Request.Extensions
         /// <param name="turnContext"></param>
         /// <param name="requestState"></param>
         /// <returns></returns>
-        public async static Task<List<Activity>> ResourceRespose(this NeuralResourceModel resource, ITurnContext turnContext, RequestState requestState)
+        public static Attachment BuildResourceAttachment(this NeuralResourceModel resourceModel)
         {
-            var res = new List<Activity>();
+            Attachment res = null;
+
+            switch (resourceModel.Type)
+            {
+                case ResourceType.DocumentPDF:
+                case ResourceType.Text:
+                case ResourceType.ImagePNG:
+                case ResourceType.ImageJPG:
+                case ResourceType.ImageGIF:
+                case ResourceType.WebsiteUrl:
+                case ResourceType.Audio:
+                case ResourceType.Script:
+                case ResourceType.Json:
+                    {
+                        res = new Attachment();
+                        res.ContentType = resourceModel.GetAttachmentType();
+                        res.ContentUrl = resourceModel.Location;
+                    }
+                    break;
+                case ResourceType.Video:
+                    {
+                        res = new VideoCard(media: new[] { new MediaUrl(resourceModel.Location) }).ToAttachment();
+                    }
+                    break;
+                default:
+                    break;
+            }
 
             return res;
         }
@@ -34,11 +69,24 @@ namespace Philips.Chatbots.Engine.Request.Extensions
         /// <param name="turnContext"></param>
         /// <param name="requestState"></param>
         /// <returns></returns>
-        public async static Task<List<Activity>> ActionRespose(this NeuralActionModel resource, ITurnContext turnContext, RequestState requestState)
+        public static async Task<List<Activity>> BuildActionRespose(this NeuralActionModel actionModel, ITurnContext turnContext)
         {
-            var res = new List<Activity>();
-
-            return res;
+            List<Activity> activity = new List<Activity>() { turnContext.Activity.CreateReply(actionModel.ApplyFormat(actionModel.Title)) };
+            foreach (var resId in actionModel.Resources)
+            {
+                try
+                {
+                    var res = await DbResourceCollection.FindOneById(resId);
+                    var act = turnContext.Activity.CreateReply(res.ApplyFormat(res.Title));
+                    act.Attachments = new List<Attachment>() { res.BuildResourceAttachment() };
+                    activity.Add(act);
+                }
+                catch (Exception e)
+                {
+                    logger.Error(e);
+                }
+            }
+            return activity;
         }
 
         /// <summary>
@@ -48,9 +96,9 @@ namespace Philips.Chatbots.Engine.Request.Extensions
         /// <param name="turnContext"></param>
         /// <param name="requestState"></param>
         /// <returns></returns>
-        public async static Task<List<Activity>> ExpressionResponse(this INeuralExpression resource, ITurnContext turnContext, RequestState requestState)
+        public static Attachment ExpressionResponse(this INeuralExpression resource, ITurnContext turnContext, RequestState requestState)
         {
-            var res = new List<Activity>();
+            var res = new Attachment();
 
             return res;
         }

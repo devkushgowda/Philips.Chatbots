@@ -3,7 +3,19 @@ namespace Philips.Chatbots.Data.Models.Interfaces
     /// <summary>
     /// Supported resource types.
     /// </summary>
-    public enum ResourceType { Guide, Document, Image, Video, Website }
+    public enum ResourceType
+    {
+        DocumentPDF = 0,
+        Text = 1,
+        ImagePNG = 3,
+        ImageJPG = 4,
+        ImageGIF = 5,
+        Video = 6,
+        WebsiteUrl = 7,
+        Audio = 8,
+        Script = 9,
+        Json = 10
+    }
 
     /// <summary>
     /// Neual resource interface.

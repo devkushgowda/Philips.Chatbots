@@ -13,11 +13,6 @@ namespace Philips.Chatbots.Data.Models.Interfaces
         public INeuralExpression NeuralExp { get; set; }
 
         /// <summary>
-        /// _id's of the child links.
-        /// </summary>
-        List<string> Children { get; set; }
-
-        /// <summary>
         /// Key notes to be sent individually.
         /// </summary>
         List<string> Notes { get; set; }
@@ -28,9 +23,9 @@ namespace Philips.Chatbots.Data.Models.Interfaces
         List<string> Parents { get; set; }
 
         /// <summary>
-        /// Rank table for child links.
+        /// Child link and their rank.
         /// </summary>
-        List<KeyValuePair<string, long>> RankTable { get; set; }
+        List<KeyValuePair<string, long>> CildrenRank { get; set; }
 
         /// <summary>
         /// Labels for this link, used for searching and categorizing purposes.
