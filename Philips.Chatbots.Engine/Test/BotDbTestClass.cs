@@ -74,10 +74,18 @@ namespace Philips.Chatbots.Engine.Test
 
             var resourceUnpleasantSound = await resourceCollection.InsertNew(new NeuralResourceModel
             {
-                Name = "UnpleasantSound ",
+                Name = "UnpleasantSound0",
                 IsLocal = false,
                 Type = ResourceType.Video,
                 Location = "https://www.youtube.com/watch?v=Y_hEEEt-Rb0",
+                Title = "[Solution] Mobile speaker producing noisy (crackling) sound fixed without​ replacing speaker"
+            });
+            var resourceUnpleasantSound1 = await resourceCollection.InsertNew(new NeuralResourceModel
+            {
+                Name = "UnpleasantSound1",
+                IsLocal = false,
+                Type = ResourceType.ImageJPG,
+                Location = "https://1.bp.blogspot.com/-74qhJFnbScQ/Xme-O_OkPnI/AAAAAAAADmw/v3iLjmTSBVYoRWH6HVenl5WYrddv2rd2QCLcBGAsYHQ/s320/Samsung%2BGT-E1207T%2BEar%2BSpeaker%2BJumpur%2BSolution.jpg",
                 Title = "[Solution] Mobile speaker producing noisy (crackling) sound fixed without​ replacing speaker"
             });
 
@@ -85,14 +93,14 @@ namespace Philips.Chatbots.Engine.Test
             {
                 Name = "UnpleasantSoundAction",
                 Title = $"[{BotResourceKeyConstants.FoundSolution}]",
-                Resources = new List<string> { $"{resourceUnpleasantSound._id}" }
+                Resources = new List<string> { resourceUnpleasantSound._id, resourceUnpleasantSound1._id }
             });
 
             var resourceCustomerSupport = await resourceCollection.InsertNew(new NeuralResourceModel
             {
                 Name = "customersupport ",
                 IsLocal = false,
-                Type = ResourceType.Video,
+                Type = ResourceType.WebsiteUrl,
                 Location = "https://www.philips.co.in/c-w/support-home/support-contact-page.html",
                 Title = "Please reach us @support site"
             });
@@ -101,7 +109,7 @@ namespace Philips.Chatbots.Engine.Test
             {
                 Name = "customersupportAction",
                 Title = $"[{BotResourceKeyConstants.FoundSolution}]",
-                Resources = new List<string> { $"{resourceCustomerSupport._id}" }
+                Resources = new List<string> { resourceCustomerSupport._id }
             });
 
             var nodeNoSound = await linkCollection.InsertChildById(nodeSound._id, new NeuraLinkModel
@@ -160,6 +168,8 @@ namespace Philips.Chatbots.Engine.Test
                 Notes = new List<string> { $"[{BotResourceKeyConstants.WeHelpYou}]", $"[{BotResourceKeyConstants.WhatIssue}]" }
             });
 
+            //await linkCollection.UnLinkParentChild(rootNode._id, nodeBattery._id);
+
             #region battery
 
             #endregion
@@ -168,9 +178,11 @@ namespace Philips.Chatbots.Engine.Test
             var stringRes = new List<KeyValuePair<string, string>> {
             new KeyValuePair<string, string>(BotResourceKeyConstants.ThankYou, "Thank you, Have a great day!"),
              new KeyValuePair<string, string>(BotResourceKeyConstants.WhatIssue, "What in the following are you facing issue with?"),
-             new KeyValuePair<string, string>(BotResourceKeyConstants.SelectedIssue, "You have selected '{Name}' category issues!"),
+             new KeyValuePair<string, string>(BotResourceKeyConstants.SelectedIssue, "You have selected '{Name}' category issues."),
              new KeyValuePair<string, string>(BotResourceKeyConstants.WeHelpYou, "That's terrific!\n Do not worry, we are here to help you."),
-             new KeyValuePair<string, string>(BotResourceKeyConstants.FoundSolution, "Here we found few solutions for you")};
+             new KeyValuePair<string, string>(BotResourceKeyConstants.CannotMoveBack, "Cannont move back, No history recorded yet."),
+             new KeyValuePair<string, string>(BotResourceKeyConstants.Error, "Encountered an error while processing request, please contact bot administrator."),
+             new KeyValuePair<string, string>(BotResourceKeyConstants.FoundSolution, "Here we found few matching solutions")};
 
             await botCollection.AddStringResourceBatchById(botId, stringRes);
             initilized = true;

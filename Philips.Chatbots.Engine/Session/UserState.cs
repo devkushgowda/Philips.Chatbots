@@ -5,6 +5,7 @@ using Philips.Chatbots.Database.Common;
 using Philips.Chatbots.Database.Extension;
 using Philips.Chatbots.Database.MongoDB;
 using Philips.Chatbots.Engine.Interfaces;
+using Philips.Chatbots.Session;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,15 +45,7 @@ namespace Philips.Chatbots.Engine.Session
 
         public ChatStateType CurrentState { get => currentState; set => currentState = value; }
 
-        public NeuraLinkModel CurrentLink
-        {
-            get => currentLink; set
-            {
-                LinkHistory.Push(value);
-                currentState = ChatStateType.Start;
-                currentLink = value;
-            }
-        }
+        public NeuraLinkModel CurrentLink => currentLink;
 
         public NeuraLinkModel RootLink => rootLink;
 
@@ -65,13 +58,34 @@ namespace Philips.Chatbots.Engine.Session
 
         }
 
+        public bool StepBack()
+        {
+            bool res = false;
+            var top = LinkHistory.Pop();
+            if (top != null)
+            {
+                res = true;
+                currentLink = top;
+                CurrentState = ChatStateType.Start;
+            }
+            return res;
+        }
+
+        public void StepForward(NeuraLinkModel link, bool recordHistory = true)
+        {
+            if (recordHistory)
+                LinkHistory.Push(link);
+            currentLink = link;
+            CurrentState = ChatStateType.Start;
+        }
+
         public async Task Initilize(string userId, string botId, IRequestPipeline pipeline)
         {
             _botId = botId;
             UserId = userId;
             RequestPipeline = pipeline;
             var rootId = await DbBotCollection.GetRootById(BotId);
-            CurrentLink = await DbLinkCollection.FindOneById(rootId ?? throw new InvalidOperationException($"Root does not exists for bot: {botId}"));
+            currentLink = await DbLinkCollection.FindOneById(rootId ?? throw new InvalidOperationException($"Root does not exists for bot: {botId}"));
             rootLink = CurrentLink;
             LinkHistory.Push(CurrentLink);
         }
@@ -84,9 +98,7 @@ namespace Philips.Chatbots.Engine.Session
                 case ResponseType.End:
                     {
                         await this.RemoveUserState();
-                        var resources = await DbBotCollection.GetFieldValue(BotId, m => m.Configuration.ResourceStrings);
-                        var message = resources.FirstOrDefault(item => item.Key == BotResourceKeyConstants.ThankYou).Value ?? "Thank you:)";
-                        await turnContext.SendActivityAsync(message);
+                        await turnContext.SendActivityAsync(StringsProvider.TryGet(BotResourceKeyConstants.ThankYou));
                     }
                     break;
                 case ResponseType.Error:

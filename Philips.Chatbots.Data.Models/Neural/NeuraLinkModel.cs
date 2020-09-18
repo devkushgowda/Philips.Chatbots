@@ -32,13 +32,11 @@ namespace Philips.Chatbots.Data.Models.Neural
         [BsonIgnoreIfDefault]
         public string Description { get; set; }
 
-        public List<string> Children { get; set; } = new List<string>();
-
         public List<string> Notes { get; set; } = new List<string>();
 
         public List<string> Parents { get; set; } = new List<string>();
 
-        public List<KeyValuePair<string, long>> RankTable { get; set; } = new List<KeyValuePair<string, long>>();
+        public List<KeyValuePair<string, long>> CildrenRank { get; set; } = new List<KeyValuePair<string, long>>();
 
         [BsonIgnoreIfDefault]
         public INeuralExpression NeuralExp { get; set; }

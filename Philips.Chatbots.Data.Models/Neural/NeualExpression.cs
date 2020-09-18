@@ -152,9 +152,20 @@ namespace Philips.Chatbots.Data.Models.Neural
         {
             actionLink = null;
             var res = ExpEvalResultType.Empty;
+
+            if (SkipEvaluation)
+            {
+                actionLink = GetDefaultLink();
+                if (actionLink != null)
+                    res = ExpEvalResultType.Skipped;
+                return res;
+            }
+
             if (Options == null || Options.Count == 0)
                 return res;
+
             var searchResult = Options.FirstOrDefault(item => item.Item.Value.Equals(input, StringComparison.InvariantCultureIgnoreCase));
+
             if (searchResult?.Link != null)
             {
                 res = ExpEvalResultType.True;
@@ -376,7 +387,16 @@ namespace Philips.Chatbots.Data.Models.Neural
         public ExpEvalResultType Next(string input, out ActionLink actionLink)
         {
             actionLink = null;
-            var res = Evaluate(input);
+            ExpEvalResultType res = ExpEvalResultType.Empty;
+            if (SkipEvaluation)
+            {
+                actionLink = GetDefaultLink();
+                if (actionLink != null)
+                    res = ExpEvalResultType.Skipped;
+                return res;
+            }
+
+            res = Evaluate(input);
             switch (res)
             {
                 case ExpEvalResultType.False:
@@ -388,6 +408,8 @@ namespace Philips.Chatbots.Data.Models.Neural
                 default:
                     break;
             }
+            if (actionLink == null)
+                res = ExpEvalResultType.Empty;
             return res;
         }
 
