@@ -1,14 +1,12 @@
 ﻿using Microsoft.Bot.Builder;
 using Philips.Chatbots.Data.Models;
 using Philips.Chatbots.Data.Models.Neural;
-using Philips.Chatbots.Database.Common;
 using Philips.Chatbots.Database.Extension;
-using Philips.Chatbots.Database.MongoDB;
 using Philips.Chatbots.Engine.Interfaces;
+using Philips.Chatbots.Engine.Request.Extensions;
 using Philips.Chatbots.Session;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using static Philips.Chatbots.Database.Common.DbAlias;
 
@@ -20,12 +18,10 @@ namespace Philips.Chatbots.Engine.Session
     public enum ChatStateType
     {
         Start = 0,
-        End = 1,
-        InvalidInput = 2,
-        RecordFeedback = 3,
-        SolutionFound = 4,
-        ExpInput = 5,
-        PickNode = 6
+        InvalidInput = 1,
+        RecordFeedback = 2,
+        ExpInput = 3,
+        PickNode = 4
     }
 
     /// <summary>
@@ -60,11 +56,13 @@ namespace Philips.Chatbots.Engine.Session
 
         public bool StepBack()
         {
-            bool res = false;
-            var top = LinkHistory.Pop();
-            if (top != null)
+            if (LinkHistory.Count < 2)  //Ignore root
+                return false;
+
+            NeuraLinkModel top;
+            bool res = LinkHistory.TryPop(out top);
+            if (res)
             {
-                res = true;
                 currentLink = top;
                 CurrentState = ChatStateType.Start;
             }
@@ -98,7 +96,9 @@ namespace Philips.Chatbots.Engine.Session
                 case ResponseType.End:
                     {
                         await this.RemoveUserState();
-                        await turnContext.SendActivityAsync(StringsProvider.TryGet(BotResourceKeyConstants.ThankYou));
+                        var reply = turnContext.Activity.CreateReply(StringsProvider.TryGet(BotResourceKeyConstants.ThankYou));
+                        reply.SuggestedActions = SuggestionExtension.GetFeedbackSuggestionActions(StringsProvider.TryGet(BotResourceKeyConstants.StartAgain));
+                        await turnContext.SendActivityAsync(reply);
                     }
                     break;
                 case ResponseType.Error:

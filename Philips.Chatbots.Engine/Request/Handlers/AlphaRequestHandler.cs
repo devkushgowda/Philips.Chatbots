@@ -2,19 +2,14 @@
 using Microsoft.Bot.Schema;
 using Philips.Chatbots.Data.Models.Neural;
 using Philips.Chatbots.Data.Models.Interfaces;
-using Philips.Chatbots.Database.Common;
 using Philips.Chatbots.Database.Extension;
-using System.Linq;
 using System.Threading.Tasks;
 using Philips.Chatbots.Engine.Interfaces;
-using Philips.Chatbots.Engine.Test;
 using Philips.Chatbots.Engine.Session;
 using Philips.Chatbots.Session;
-using static Philips.Chatbots.Database.Common.DbAlias;
 using Philips.Chatbots.Engine.Request.Extensions;
 using Philips.Chatbots.Data.Models;
-using System;
-using System.Collections.Generic;
+using static Philips.Chatbots.Database.Common.DbAlias;
 
 namespace Philips.Chatbots.Engine.Requst.Handlers
 {
@@ -27,7 +22,7 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
         {
             var res = ResponseType.Continue;
 
-            switch (turnContext.Activity.Text.ToLower())
+            switch (turnContext.Activity.Text?.ToLower())
             {
                 case "exit":
                     {
@@ -36,22 +31,23 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                     break;
                 case "back":
                     {
-                        if (requestState.StepBack())
-                            await TakeInputAction(turnContext, requestState);
-                        else
+                        if (!requestState.StepBack())
                             await turnContext.SendActivityAsync(StringsProvider.TryGet(BotResourceKeyConstants.CannotMoveBack));
+
+                        res = await TakeAction(turnContext, requestState);
                     }
                     break;
                 default:
                     {
-                        await TakeInputAction(turnContext, requestState);
+                        res = await TakeAction(turnContext, requestState);
                     }
                     break;
             }
             return res;
         }
-        private async Task TakeInputAction(ITurnContext turnContext, RequestState requestState)
+        private async Task<ResponseType> TakeAction(ITurnContext turnContext, RequestState requestState)
         {
+            var ret = ResponseType.Continue;
             var text = turnContext.Activity.Text;
             var curLink = requestState.CurrentLink;
 
@@ -60,7 +56,7 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                 case ChatStateType.Start:
                     {
 
-                        await SendReplyWithSuggestion(turnContext, requestState);
+                        await SendResponseForCurrentNode(turnContext, requestState);
                     }
                     break;
                 case ChatStateType.PickNode:
@@ -68,113 +64,161 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                         var nextLink = await DbLinkCollection.FindOneById(text);
                         if (nextLink == null)
                         {
-                            await turnContext.SendActivityAsync("Invalid input, Please try again!");
-                            await SendReplyWithSuggestion(turnContext, requestState);
+                            await turnContext.SendActivityAsync(StringsProvider.TryGet(BotResourceKeyConstants.InvalidInput));
+                            await SendResponseForCurrentNode(turnContext, requestState);
                         }
                         else
                         {
                             curLink = nextLink;
                             requestState.StepForward(curLink);
-                            await SendReplyWithSuggestion(turnContext, requestState);
+                            await SendResponseForCurrentNode(turnContext, requestState);
                         }
-                    }
-                    break;
-                case ChatStateType.End:
-                    {
-
                     }
                     break;
                 case ChatStateType.RecordFeedback:
                     {
-
+                        switch (text.ToLower())
+                        {
+                            case "yes":
+                                {
+                                    var childLink = curLink;
+                                    NeuraLinkModel parentLink = null;
+                                    while (requestState.LinkHistory.TryPop(out parentLink))
+                                    {
+                                        await DbLinkCollection.UpdateNeuralRankById(parentLink._id, childLink._id);
+                                        childLink = parentLink;
+                                    }
+                                    ret = ResponseType.End;
+                                }
+                                break;
+                            case "no":
+                                ret = ResponseType.End;
+                                break;
+                            default:
+                                await turnContext.SendActivityAsync(StringsProvider.TryGet(BotResourceKeyConstants.InvalidInput));
+                                break;
+                        }
+                        if (ret == ResponseType.End)
+                            await turnContext.SendActivityAsync(StringsProvider.TryGet(BotResourceKeyConstants.ThankYouFeedback));
                     }
                     break;
                 case ChatStateType.InvalidInput:
                 case ChatStateType.ExpInput:
                     {
-                        ActionLink res;
-                        var op = curLink.NeuralExp.Next(text, out res);
-                        switch (op)
-                        {
-                            case ExpEvalResultType.False:
-                            case ExpEvalResultType.True:
-                                {
-                                    switch (res.Type)
-                                    {
-                                        case LinkType.NeuralLink:
-                                            break;
-                                        case LinkType.ActionLink:
-                                            {
-                                                var action = await DbActionCollection.FindOneById(res.Id);
-                                                (await action.BuildActionRespose(turnContext)).ForEach(item => turnContext.SendActivityAsync(item));
-                                            }
-                                            break;
-                                        case LinkType.NeuralResource:
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                }
-                                break;
-                            case ExpEvalResultType.Exception:
-                            case ExpEvalResultType.Invalid:
-                                {
-                                    await turnContext.SendActivityAsync("Invalid input, Try again!");
-                                    requestState.CurrentState = ChatStateType.InvalidInput;
-                                }
-                                break;
-                            case ExpEvalResultType.Empty://TODO
-                            default:
-
-                                break;
-                        }
+                        await EvaluateExpressionInput(turnContext, requestState);
                     }
                     break;
                 default:
                     break;
             }
+            return ret;
 
         }
+        private async Task<bool> EvaluateExpressionInput(ITurnContext turnContext, RequestState requestState)
+        {
+            var res = false;
+            var text = turnContext.Activity.Text;
+            var curLink = requestState.CurrentLink;
+            ActionLink actionResult;
+            ExpEvalResultType op = curLink.NeuralExp.Next(text, out actionResult);
+            switch (op)
+            {
+                case ExpEvalResultType.Skipped:
+                case ExpEvalResultType.False:
+                case ExpEvalResultType.True:
+                    {
+                        switch (actionResult.Type)
+                        {
+                            case LinkType.NeuralLink:
+                                {
+                                    var link = await DbLinkCollection.FindOneById(actionResult.Id);
+                                    if (link != null)
+                                    {
+                                        curLink = link;
+                                        requestState.StepForward(curLink);
+                                        await SendResponseForCurrentNode(turnContext, requestState);
+                                    }
+                                    else
+                                    {
+                                        //Invalid expression evaluation link id.
+                                    }
 
-        public async Task SendReplyWithSuggestion(ITurnContext turnContext, RequestState requestState)
+                                }
+                                break;
+                            case LinkType.ActionLink:
+                                {
+                                    var action = await DbActionCollection.FindOneById(actionResult.Id);
+                                    (await action.BuildActionRespose(turnContext)).ForEach(item => turnContext.SendActivityAsync(item));
+                                    var reply = turnContext.Activity.CreateReply(StringsProvider.TryGet(BotResourceKeyConstants.Feedback));
+                                    reply.SuggestedActions = SuggestionExtension.GetFeedbackSuggestionActions();
+                                    await turnContext.SendActivityAsync(reply);
+                                    requestState.CurrentState = ChatStateType.RecordFeedback;
+                                }
+                                break;
+                            case LinkType.NeuralResource:
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    res = true;
+                    break;
+                case ExpEvalResultType.Exception:
+                case ExpEvalResultType.Invalid:
+                    {
+                        await turnContext.SendActivityAsync("Invalid input, Try again!");
+                        requestState.CurrentState = ChatStateType.InvalidInput;
+                    }
+                    break;
+                case ExpEvalResultType.Empty://TODO
+                default:
+
+                    break;
+            }
+            return res;
+        }
+        private async Task<bool> EvaluateExpression(ITurnContext turnContext, RequestState requestState)
+        {
+            var res = false;
+            var curLink = requestState.CurrentLink;
+            Activity reply;
+            if (curLink?.NeuralExp != null)
+            {
+                if (curLink.NeuralExp.SkipEvaluation)
+                {
+                    await EvaluateExpressionInput(turnContext, requestState);//Default expression
+                }
+                else if (curLink.NeuralExp.Hint != null && curLink.NeuralExp.Hint.Contains(":"))
+                {
+                    var title = curLink.NeuralExp.QuestionTitle;
+                    reply = turnContext.Activity.CreateReply(curLink.ApplyFormat(title));
+                    reply.Type = ActivityTypes.Message;
+                    reply.TextFormat = TextFormatTypes.Plain;
+                    reply.SuggestedActions = curLink.GetHintSuggestionActions();
+                    await turnContext.SendActivityAsync(reply);
+                    requestState.CurrentState = ChatStateType.ExpInput;
+                }
+                res = true;
+            }
+            return res;
+        }
+        private async Task SendResponseForCurrentNode(ITurnContext turnContext, RequestState requestState)
         {
             var curLink = requestState.CurrentLink;
             Activity reply;
-            if (curLink.NeuralExp != null && !curLink.NeuralExp.SkipEvaluation)
+
+            var isExpression = await EvaluateExpression(turnContext, requestState);
+
+            if (!isExpression)
             {
-                reply = turnContext.Activity.CreateReply(curLink.ApplyFormat(curLink.NeuralExp.QuestionTitle));
-                reply.Type = ActivityTypes.Message;
-                reply.TextFormat = TextFormatTypes.Plain;
-                if (curLink.NeuralExp.Hint != null)
-                    reply.SuggestedActions = new SuggestedActions()
-                    {
-                        Actions = curLink.NeuralExp.Hint.Split(",").Select(item =>
-                        {
-                            var keyValue = item.Split(":");
-                            return new CardAction { Title = keyValue[0], Value = keyValue[1], Type = ActionTypes.ImBack };
-                        }).ToList()
-                    };
-                await turnContext.SendActivityAsync(reply);
-                requestState.CurrentState = ChatStateType.ExpInput;
-            }
-            else
-            {
-                if (curLink.Notes.Count == 0)
+                if (curLink.Notes?.Count == 0)
                 {
                     reply = turnContext.Activity.CreateReply(curLink.ApplyFormat(curLink.Title));
                     reply.Type = ActivityTypes.Message;
                     reply.TextFormat = TextFormatTypes.Plain;
                     if (curLink.NeuralExp == null)
                     {
-                        curLink.CildrenRank.Sort((x, y) => x.Value.CompareTo(y.Value));
-                        reply.SuggestedActions = new SuggestedActions()
-                        {
-                            Actions = curLink.CildrenRank.Select(id =>
-                                 {
-                                     var name = DbLinkCollection.GetFieldValue(id.Key, x => x.Name).Result;
-                                     return new CardAction { Title = name, Value = id.Key, Type = ActionTypes.PostBack };
-                                 }).ToList()
-                        };
+                        reply.SuggestedActions = curLink.GetChildSuggestionActions();
                         await turnContext.SendActivityAsync(reply);
                     }
                 }
@@ -184,56 +228,27 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                     int count = 1;
                     foreach (var note in curLink.Notes)
                     {
-                        if (count++ == curLink.Notes.Count)
+                        if (count++ == curLink.Notes.Count) //Last note
                         {
                             reply = turnContext.Activity.CreateReply(curLink.ApplyFormat(note));
                             reply.Type = ActivityTypes.Message;
                             reply.TextFormat = TextFormatTypes.Plain;
-                            if (curLink.NeuralExp == null)
-                            {
-                                curLink.CildrenRank.Sort((x, y) => x.Value.CompareTo(y.Value));
-                                reply.SuggestedActions = new SuggestedActions()
-                                {
-                                    Actions = curLink.CildrenRank.Select(id =>
-                                    {
-                                        var name = DbLinkCollection.GetFieldValue(id.Key, x => x.Name).Result;
-                                        return new CardAction { Title = name, Value = id.Key, Type = ActionTypes.PostBack };
-                                    }).ToList()
-                                };
-                                await turnContext.SendActivityAsync(reply);
-                            }
-                            else
-                            {
-                                await turnContext.SendActivityAsync(curLink.ApplyFormat(note));
-                            }
+                            reply.SuggestedActions = curLink.GetChildSuggestionActions();
+                            await turnContext.SendActivityAsync(reply);
                         }
-                        requestState.CurrentState = curLink.NeuralExp != null ? ChatStateType.ExpInput : ChatStateType.PickNode;
-
-                    }
-
-                    if (curLink.NeuralExp != null && curLink.NeuralExp.SkipEvaluation)
-                    {
-                        var res = curLink.NeuralExp.GetDefaultLink();
-                        switch (res.Type)
+                        else
                         {
-                            case LinkType.NeuralLink:
-                                break;
-                            case LinkType.ActionLink:
-                                {
-                                    var action = await DbActionCollection.FindOneById(res.Id);
-                                    (await action.BuildActionRespose(turnContext)).ForEach(item => turnContext.SendActivityAsync(item));
-                                }
-                                break;
-                            case LinkType.NeuralResource:
-                                break;
-                            default:
-                                break;
+                            await turnContext.SendActivityAsync(curLink.ApplyFormat(note));
                         }
                     }
                 }
+                requestState.CurrentState = ChatStateType.PickNode;
             }
         }
 
     }
+
 }
+
+
 

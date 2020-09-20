@@ -6,7 +6,6 @@ using Philips.Chatbots.Data.Models.Interfaces;
 using Philips.Chatbots.Data.Models.Neural;
 using Philips.Chatbots.Database.Extension;
 using Philips.Chatbots.Engine.Requst.Handlers;
-using Philips.Chatbots.Engine.Session;
 using Philips.Chatbots.Session;
 using System;
 using System.Collections.Generic;
@@ -89,18 +88,5 @@ namespace Philips.Chatbots.Engine.Request.Extensions
             return activity;
         }
 
-        /// <summary>
-        /// Handles resuest flow for neural expression nodes.
-        /// </summary>
-        /// <param name="resource"></param>
-        /// <param name="turnContext"></param>
-        /// <param name="requestState"></param>
-        /// <returns></returns>
-        public static Attachment ExpressionResponse(this INeuralExpression resource, ITurnContext turnContext, RequestState requestState)
-        {
-            var res = new Attachment();
-
-            return res;
-        }
     }
 }
