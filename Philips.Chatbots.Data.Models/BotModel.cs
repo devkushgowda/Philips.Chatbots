@@ -63,6 +63,12 @@ namespace Philips.Chatbots.Data.Models
         public const string WeHelpYou = nameof(WeHelpYou); 
         public const string FoundSolution = nameof(FoundSolution);
         public const string CannotMoveBack = nameof(CannotMoveBack);
+        public const string InvalidInput = nameof(InvalidInput);
+        public const string Feedback = nameof(Feedback);
+        public const string ThankYouFeedback = nameof(ThankYouFeedback);
+        public const string FeedBackOptions = nameof(FeedBackOptions);
+        public const string StartAgain = nameof(StartAgain);
+        public const string CommonActionOptions = nameof(CommonActionOptions); 
     }
 
 }

@@ -135,7 +135,7 @@ namespace Philips.Chatbots.Engine.Test
                 Notes = new List<string> { $"[{BotResourceKeyConstants.WeHelpYou}]", $"[{BotResourceKeyConstants.WhatIssue}]" },
                 NeuralExp = new DecisionExpression
                 {
-                    Hint = "Yes:Yes,No:No",
+                    Hint = "Yes:yes,No:no",
                     QuestionTitle = "Did your device fall?",
                     ExpressionTree = ExpressionBuilder.Build().EQ("yes"),
                     ForwardAction = new ActionLink
@@ -179,10 +179,18 @@ namespace Philips.Chatbots.Engine.Test
             new KeyValuePair<string, string>(BotResourceKeyConstants.ThankYou, "Thank you, Have a great day!"),
              new KeyValuePair<string, string>(BotResourceKeyConstants.WhatIssue, "What in the following are you facing issue with?"),
              new KeyValuePair<string, string>(BotResourceKeyConstants.SelectedIssue, "You have selected '{Name}' category issues."),
-             new KeyValuePair<string, string>(BotResourceKeyConstants.WeHelpYou, "That's terrific!\n Do not worry, we are here to help you."),
+             new KeyValuePair<string, string>(BotResourceKeyConstants.WeHelpYou, "That's terrific!\n do not worry, we are here to help you."),
              new KeyValuePair<string, string>(BotResourceKeyConstants.CannotMoveBack, "Cannont move back, No history recorded yet."),
              new KeyValuePair<string, string>(BotResourceKeyConstants.Error, "Encountered an error while processing request, please contact bot administrator."),
-             new KeyValuePair<string, string>(BotResourceKeyConstants.FoundSolution, "Here we found few matching solutions")};
+             new KeyValuePair<string, string>(BotResourceKeyConstants.FoundSolution, "Here we found few matching solutions"),
+             new KeyValuePair<string, string>(BotResourceKeyConstants.InvalidInput, "Invalid input, please try again."),
+             new KeyValuePair<string, string>(BotResourceKeyConstants.ThankYouFeedback, "Kudos for your feedback."),
+             new KeyValuePair<string, string>(BotResourceKeyConstants.StartAgain, "Facing another issue?:start"),
+             new KeyValuePair<string, string>(BotResourceKeyConstants.Feedback, "Please help us improve our service, Was the soulution helpful?"),
+
+                new KeyValuePair<string, string>(BotResourceKeyConstants.FeedBackOptions, "Yes:yes,No:no,Exit:exit"),
+                new KeyValuePair<string, string>(BotResourceKeyConstants.CommonActionOptions, "Back:back,Exit:exit")
+            };
 
             await botCollection.AddStringResourceBatchById(botId, stringRes);
             initilized = true;
