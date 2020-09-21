@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Philips.Chatbots.ML.Models;
 using System.Linq;
+using Philips.Chatbots.Engine.Storage;
 
 namespace Philips.Chatbots.Engine.Test
 {
@@ -249,10 +250,11 @@ namespace Philips.Chatbots.Engine.Test
 
             await trainDataCollection.InsertNew(displayTrainModel);
 
-            new NeuralTrainEngine().BuildAndSaveModel();
+            var trainer = MlEnginesProvider.GetOrCreateTrainEngine<NeuralTrainEngine>();
+            trainer.BuildAndSaveModel();
 
             List<string> mlTestData = new List<string> { "my mobile screen is broken", "my speaker is not working", "broken screen" };
-            var predEngine = new NeualPredictionEngine(NeuralTrainEngine.ModelFilePath, true);
+            var predEngine = MlEnginesProvider.GetOrCreatePredictionEngine<NeualPredictionEngine>();
             var output = mlTestData.Select(item => linkCollection.FindOneById(predEngine.Predict(new NeuralTrainInput { Text = item })._id).Result.Name).ToList();
             #endregion
             initilized = true;

@@ -8,6 +8,12 @@ namespace Philips.Chatbots.ML.Models
     public class NeualPredictionEngine : AbstractPredictModel<NeuralTrainInput, PredictionOutput>
     {
         private string _path;
+
+        public NeualPredictionEngine() : this(NeuralTrainEngine.ModelFilePath)
+        {
+
+        }
+
         public NeualPredictionEngine(string path = null, bool initilize = false)
         {
             _path = path ?? NeuralTrainEngine.ModelFilePath;

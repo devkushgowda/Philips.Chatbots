@@ -11,6 +11,7 @@ using Philips.Chatbots.Engine.Request.Extensions;
 using Philips.Chatbots.Data.Models;
 using static Philips.Chatbots.Database.Common.DbAlias;
 using Philips.Chatbots.ML.Models;
+using Philips.Chatbots.Engine.Storage;
 
 namespace Philips.Chatbots.Engine.Requst.Handlers
 {
@@ -76,7 +77,7 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                         }
                         else
                         {
-                            var res = new NeualPredictionEngine(initilize: true).Predict(new NeuralTrainInput { Text = text });
+                            var res = MlEnginesProvider.GetOrCreatePredictionEngine<NeualPredictionEngine>().Predict(new NeuralTrainInput { Text = text });
                             var nextLink = await DbLinkCollection.FindOneById(res._id);
                             if (nextLink != null)
                             {
