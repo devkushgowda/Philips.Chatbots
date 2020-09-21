@@ -21,7 +21,8 @@ namespace Philips.Chatbots.Engine.Session
         InvalidInput = 1,
         RecordFeedback = 2,
         ExpInput = 3,
-        PickNode = 4
+        PickNode = 4,
+        AdvanceChat = 5
     }
 
     /// <summary>

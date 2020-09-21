@@ -92,5 +92,15 @@ namespace Philips.Chatbots.Engine.Request.Extensions
         {
             Actions = ParseActionsFromColonFormatString(input ?? FeedBackOptions)
         };
+
+        /// <summary>
+        /// Get common back & exit suggestion action.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static SuggestedActions GetCommonSuggestionActions(string input = null) => new SuggestedActions()
+        {
+            Actions = ParseActionsFromColonFormatString(input ?? CommonActionOptions)
+        };
     }
 }

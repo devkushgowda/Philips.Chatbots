@@ -10,6 +10,7 @@ using Philips.Chatbots.Session;
 using Philips.Chatbots.Engine.Request.Extensions;
 using Philips.Chatbots.Data.Models;
 using static Philips.Chatbots.Database.Common.DbAlias;
+using Philips.Chatbots.ML.Models;
 
 namespace Philips.Chatbots.Engine.Requst.Handlers
 {
@@ -24,17 +25,25 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
 
             switch (turnContext.Activity.Text?.ToLower())
             {
-                case "exit":
+                case BotResourceKeyConstants.CommandExit:
                     {
+
                         res = ResponseType.End;
                     }
                     break;
-                case "back":
+                case BotResourceKeyConstants.CommandBack:
                     {
                         if (!requestState.StepBack())
                             await turnContext.SendActivityAsync(StringsProvider.TryGet(BotResourceKeyConstants.CannotMoveBack));
 
                         res = await TakeAction(turnContext, requestState);
+                    }
+                    break;
+                case BotResourceKeyConstants.CommandAdvanceChat:
+                    {
+                        requestState.CurrentState = ChatStateType.AdvanceChat;
+                        await turnContext.SendActivityAsync(StringsProvider.TryGet(BotResourceKeyConstants.AdvanceChatQuery));
+
                     }
                     break;
                 default:
@@ -57,6 +66,28 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                     {
 
                         await SendResponseForCurrentNode(turnContext, requestState);
+                    }
+                    break;
+                case ChatStateType.AdvanceChat:
+                    {
+                        if (string.IsNullOrWhiteSpace(text))
+                        {
+                            await SendReply(turnContext, StringsProvider.TryGet(BotResourceKeyConstants.InvalidInput), SuggestionExtension.GetCommonSuggestionActions());
+                        }
+                        else
+                        {
+                            var res = new NeualPredictionEngine(initilize: true).Predict(new NeuralTrainInput { Text = text });
+                            var nextLink = await DbLinkCollection.FindOneById(res._id);
+                            if (nextLink != null)
+                            {
+                                requestState.StepForward(nextLink);
+                                await SendResponseForCurrentNode(turnContext, requestState);
+                            }
+                            else
+                            {
+                                await SendReply(turnContext, StringsProvider.TryGet(BotResourceKeyConstants.NoMatchFound), SuggestionExtension.GetCommonSuggestionActions());
+                            }
+                        }
                     }
                     break;
                 case ChatStateType.PickNode:
@@ -148,10 +179,11 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                             case LinkType.ActionLink:
                                 {
                                     var action = await DbActionCollection.FindOneById(actionResult.Id);
+
                                     (await action.BuildActionRespose(turnContext)).ForEach(item => turnContext.SendActivityAsync(item));
-                                    var reply = turnContext.Activity.CreateReply(StringsProvider.TryGet(BotResourceKeyConstants.Feedback));
-                                    reply.SuggestedActions = SuggestionExtension.GetFeedbackSuggestionActions();
-                                    await turnContext.SendActivityAsync(reply);
+
+                                    await SendReply(turnContext, StringsProvider.TryGet(BotResourceKeyConstants.Feedback), SuggestionExtension.GetFeedbackSuggestionActions());
+                  
                                     requestState.CurrentState = ChatStateType.RecordFeedback;
                                 }
                                 break;
@@ -166,7 +198,7 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                 case ExpEvalResultType.Exception:
                 case ExpEvalResultType.Invalid:
                     {
-                        await turnContext.SendActivityAsync("Invalid input, Try again!");
+                        await SendReply(turnContext, "Invalid input, Try again!", SuggestionExtension.GetCommonSuggestionActions());
                         requestState.CurrentState = ChatStateType.InvalidInput;
                     }
                     break;
@@ -177,11 +209,21 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
             }
             return res;
         }
+
+        private async Task SendReply(ITurnContext turnContext, string message, SuggestedActions suggestedActions)
+        {
+            var reply = turnContext.Activity.CreateReply(message);
+            reply.Type = ActivityTypes.Message;
+            reply.TextFormat = TextFormatTypes.Plain;
+            reply.SuggestedActions = suggestedActions;
+            await turnContext.SendActivityAsync(reply);
+        }
+
         private async Task<bool> EvaluateExpression(ITurnContext turnContext, RequestState requestState)
         {
             var res = false;
             var curLink = requestState.CurrentLink;
-            Activity reply;
+
             if (curLink?.NeuralExp != null)
             {
                 if (curLink.NeuralExp.SkipEvaluation)
@@ -190,12 +232,11 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                 }
                 else if (curLink.NeuralExp.Hint != null && curLink.NeuralExp.Hint.Contains(":"))
                 {
+                    foreach (var note in curLink.Notes)
+                        await turnContext.SendActivityAsync(curLink.ApplyFormat(note));
+
                     var title = curLink.NeuralExp.QuestionTitle;
-                    reply = turnContext.Activity.CreateReply(curLink.ApplyFormat(title));
-                    reply.Type = ActivityTypes.Message;
-                    reply.TextFormat = TextFormatTypes.Plain;
-                    reply.SuggestedActions = curLink.GetHintSuggestionActions();
-                    await turnContext.SendActivityAsync(reply);
+                    await SendReply(turnContext, curLink.ApplyFormat(title), curLink.GetHintSuggestionActions());
                     requestState.CurrentState = ChatStateType.ExpInput;
                 }
                 res = true;
@@ -213,14 +254,7 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
             {
                 if (curLink.Notes?.Count == 0)
                 {
-                    reply = turnContext.Activity.CreateReply(curLink.ApplyFormat(curLink.Title));
-                    reply.Type = ActivityTypes.Message;
-                    reply.TextFormat = TextFormatTypes.Plain;
-                    if (curLink.NeuralExp == null)
-                    {
-                        reply.SuggestedActions = curLink.GetChildSuggestionActions();
-                        await turnContext.SendActivityAsync(reply);
-                    }
+                    await SendReply(turnContext, curLink.ApplyFormat(curLink.Title), curLink.GetChildSuggestionActions());
                 }
                 else
                 {
@@ -230,11 +264,7 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                     {
                         if (count++ == curLink.Notes.Count) //Last note
                         {
-                            reply = turnContext.Activity.CreateReply(curLink.ApplyFormat(note));
-                            reply.Type = ActivityTypes.Message;
-                            reply.TextFormat = TextFormatTypes.Plain;
-                            reply.SuggestedActions = curLink.GetChildSuggestionActions();
-                            await turnContext.SendActivityAsync(reply);
+                            await SendReply(turnContext, curLink.ApplyFormat(note), curLink.GetChildSuggestionActions());
                         }
                         else
                         {

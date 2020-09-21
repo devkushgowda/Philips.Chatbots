@@ -5,6 +5,8 @@ using Philips.Chatbots.Database.Extension;
 using Philips.Chatbots.Database.MongoDB;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Philips.Chatbots.ML.Models;
+using System.Linq;
 
 namespace Philips.Chatbots.Engine.Test
 {
@@ -34,19 +36,37 @@ namespace Philips.Chatbots.Engine.Test
                 Configuration = new BotConfiguration { }
             }, botId);
 
-            //RootNode
 
-            var rootNode = await linkCollection.InsertNew(new NeuraLinkModel
+            var superRootNode = await linkCollection.InsertNew(new NeuraLinkModel
             {
-                Name = "RootNode",
-                Title = "Welcome to philips chatbot mobile device assistant beta version!\n" +
-                "Note: Do not type anything unless asked for it:)",
-                Notes = new List<string> { $"[{BotResourceKeyConstants.WhatIssue}]" }
+                Name = "SuperRoot",
+                Notes = new List<string> { "Welcome to philips chatbot mobile device assistant beta version!" },
+                NeuralExp = new DecisionExpression
+                {
+                    QuestionTitle = "Choose the conversation mode:",
+                    Hint = $"Simple:simple,Advanced:{BotResourceKeyConstants.CommandAdvanceChat}",
+                    ExpressionTree = ExpressionBuilder.Build().EQ("simple")
+                }
             });
 
-            //configure it as root node
-            await botCollection.SetRootNodeById(botId, rootNode._id);
-            var nodeSound = await linkCollection.InsertChildById(rootNode._id, new NeuraLinkModel
+
+            //configure it as bot root node
+            await botCollection.SetRootNodeById(botId, superRootNode._id);
+
+
+
+            var nodeSimpleChatMode = await linkCollection.InsertChildById(superRootNode._id, new NeuraLinkModel
+            {
+                Name = "SimpleChatNode",
+                Title = $"[{BotResourceKeyConstants.WhatIssue}]"
+            });
+
+            //Link super root forward action to simple chat mode
+            await linkCollection.SetNeuralExpForwardLinkById(superRootNode._id, new ActionLink { Type = LinkType.NeuralLink, Id = nodeSimpleChatMode._id });
+
+
+
+            var nodeSound = await linkCollection.InsertChildById(nodeSimpleChatMode._id, new NeuraLinkModel
             {
                 Name = "Sound/Speaker",
                 Title = $"[{BotResourceKeyConstants.SelectedIssue}]",
@@ -152,29 +172,30 @@ namespace Philips.Chatbots.Engine.Test
             }); ;
 
             #endregion
-            var nodeDisplay = await linkCollection.InsertChildById(rootNode._id, new NeuraLinkModel
+            var nodeDisplay = await linkCollection.InsertChildById(nodeSimpleChatMode._id, new NeuraLinkModel
             {
                 Name = "Display/Broken screen",
                 Title = $"[{BotResourceKeyConstants.SelectedIssue}]",
                 Notes = new List<string> { $"[{BotResourceKeyConstants.WeHelpYou}]", $"[{BotResourceKeyConstants.WhatIssue}]" }
             });
+
             #region display
 
             #endregion
-            var nodeBattery = await linkCollection.InsertChildById(rootNode._id, new NeuraLinkModel
+            var nodeBattery = await linkCollection.InsertChildById(nodeSimpleChatMode._id, new NeuraLinkModel
             {
                 Name = "Battery/Charging",
                 Title = $"[{BotResourceKeyConstants.SelectedIssue}]",
                 Notes = new List<string> { $"[{BotResourceKeyConstants.WeHelpYou}]", $"[{BotResourceKeyConstants.WhatIssue}]" }
             });
 
-            //await linkCollection.UnLinkParentChild(rootNode._id, nodeBattery._id);
+            //await linkCollection.UnLinkParentChild(nodeSimpleChatMode._id, nodeBattery._id);
 
             #region battery
 
             #endregion
 
-
+            #region resources
             var stringRes = new List<KeyValuePair<string, string>> {
             new KeyValuePair<string, string>(BotResourceKeyConstants.ThankYou, "Thank you, Have a great day!"),
              new KeyValuePair<string, string>(BotResourceKeyConstants.WhatIssue, "What in the following are you facing issue with?"),
@@ -186,6 +207,8 @@ namespace Philips.Chatbots.Engine.Test
              new KeyValuePair<string, string>(BotResourceKeyConstants.InvalidInput, "Invalid input, please try again."),
              new KeyValuePair<string, string>(BotResourceKeyConstants.ThankYouFeedback, "Kudos for your feedback."),
              new KeyValuePair<string, string>(BotResourceKeyConstants.StartAgain, "Facing another issue?:start"),
+             new KeyValuePair<string, string>(BotResourceKeyConstants.AdvanceChatQuery, "Tell us about your issue:"),
+             new KeyValuePair<string, string>(BotResourceKeyConstants.NoMatchFound, "No match found, try again in different words."),
              new KeyValuePair<string, string>(BotResourceKeyConstants.Feedback, "Please help us improve our service, Was the soulution helpful?"),
 
                 new KeyValuePair<string, string>(BotResourceKeyConstants.FeedBackOptions, "Yes:yes,No:no,Exit:exit"),
@@ -193,6 +216,45 @@ namespace Philips.Chatbots.Engine.Test
             };
 
             await botCollection.AddStringResourceBatchById(botId, stringRes);
+            #endregion
+
+            #region ML model test data
+            var speakerTrainModel = new NeuraTrainDataModel
+            {
+                _id = nodeSound._id,
+                Dataset = new List<string> {
+                    "Speaker is not working",
+                    "Mobile sound issue",
+                    "No sound",
+                    "Unpleasant sound from speaker" ,
+                    "Cant hear sound",
+                    "Noisy music"
+                }
+            };
+
+            await trainDataCollection.InsertNew(speakerTrainModel);
+
+            var displayTrainModel = new NeuraTrainDataModel
+            {
+                _id = nodeDisplay._id,
+                Dataset = new List<string> {
+                    "Display is not working",
+                    "Mobile display issue",
+                    "Broken screen",
+                    "Screen cracked" ,
+                    "Lines on display",
+                    "Issue with mobile display"
+                }
+            };
+
+            await trainDataCollection.InsertNew(displayTrainModel);
+
+            new NeuralTrainEngine().BuildAndSaveModel();
+
+            List<string> mlTestData = new List<string> { "my mobile screen is broken", "my speaker is not working", "broken screen" };
+            var predEngine = new NeualPredictionEngine(NeuralTrainEngine.ModelFilePath, true);
+            var output = mlTestData.Select(item => linkCollection.FindOneById(predEngine.Predict(new NeuralTrainInput { Text = item })._id).Result.Name).ToList();
+            #endregion
             initilized = true;
         }
     }

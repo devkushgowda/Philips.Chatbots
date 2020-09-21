@@ -43,6 +43,36 @@ namespace Philips.Chatbots.Database.Extension
         }
 
         /// <summary>
+        /// Set DecisionExpression forward action link with matching id.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="collection"></param>
+        /// <param name="id"></param>
+        /// <param name="actionLink"></param>
+        /// <returns></returns>
+        public static async Task<bool> SetNeuralExpForwardLinkById<T>(this IMongoCollection<T> collection, string id, ActionLink actionLink) where T : NeuraLinkModel
+        {
+            var result = await collection.UpdateOneAsync(item => item._id == id,
+                Builders<T>.Update.Set(x => ((DecisionExpression)x.NeuralExp).ForwardAction, actionLink));
+            return result.ModifiedCount > 0;
+        }
+
+        /// <summary>
+        /// Set DecisionExpression fallback action link with matching id.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="collection"></param>
+        /// <param name="id"></param>
+        /// <param name="actionLink"></param>
+        /// <returns></returns>
+        public static async Task<bool> SetNeuralExpFallbackLinkById<T>(this IMongoCollection<T> collection, string id, ActionLink actionLink) where T : NeuraLinkModel
+        {
+            var result = await collection.UpdateOneAsync(item => item._id == id,
+                Builders<T>.Update.Set(x => ((DecisionExpression)x.NeuralExp).FallbackAction, actionLink));
+            return result.ModifiedCount > 0;
+        }
+
+        /// <summary>
         /// Insert new childlink.
         /// </summary>
         /// <typeparam name="T"></typeparam>

@@ -69,6 +69,16 @@ namespace Philips.Chatbots.Data.Models
         public const string FeedBackOptions = nameof(FeedBackOptions);
         public const string StartAgain = nameof(StartAgain);
         public const string CommonActionOptions = nameof(CommonActionOptions); 
+        public const string AdvanceChatQuery = nameof(AdvanceChatQuery);
+        public const string NoMatchFound = nameof(NoMatchFound);
+
+
+
+        public const string CommandYes = "yes";
+        public const string CommandNo = "no";
+        public const string CommandBack = "back";
+        public const string CommandExit = "exit";
+        public const string CommandAdvanceChat = "advanced-chat-mode";
     }
 
 }
