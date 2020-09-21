@@ -1,6 +1,5 @@
-﻿using System;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder;
 using Philips.Chatbots.Engine.Interfaces;
@@ -14,19 +13,19 @@ namespace Philips.Chatbots.Engine.Session
     /// </summary>
     public static class SessionStorage
     {
-        private static List<RequestState> _userStates = new List<RequestState>();
+        private static ConcurrentDictionary<string, RequestState> _requestStateCache = new ConcurrentDictionary<string, RequestState>();
 
         private static readonly IRequestPipeline RequestPipeline = new RequestPipeLine { Pipeline = new List<IRequestHandler> { new AlphaRequestHandler() } };
 
         public async static Task<RequestState> GetOrCreateUserState(this ITurnContext userContext, string botId)
         {
             var id = "AnyId";// userContext.Activity.Id;
-            var res = _userStates.FirstOrDefault(item => item.UserId == id);
-            if (res == null)
+            RequestState res;
+            if (!_requestStateCache.TryGetValue(id, out res))
             {
                 res = new RequestState();
                 await res.Initilize(id, botId, RequestPipeline);
-                _userStates.Add(res);
+                _requestStateCache.TryAdd(res.UserId, res);
             }
             return res;
         }
@@ -42,7 +41,7 @@ namespace Philips.Chatbots.Engine.Session
         public async static Task RemoveUserState(this RequestState state)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
-            _userStates.Remove(state);
+            _requestStateCache.Remove(state.UserId, out var item);
         }
     }
 }
