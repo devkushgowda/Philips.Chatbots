@@ -7,7 +7,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Philips.Chatbots.ML.Models;
 using System.Linq;
-using Philips.Chatbots.Engine.Storage;
+using Philips.Chatbots.ML.Interfaces;
+using Microsoft.Extensions.ML;
 
 namespace Philips.Chatbots.Engine.Test
 {
@@ -17,7 +18,7 @@ namespace Philips.Chatbots.Engine.Test
     public static class BotDbTestClass
     {
         private static bool initilized = false;
-        public async static Task Feed(string botId)
+        public async static Task Feed(string botId, Microsoft.Extensions.ML.PredictionEnginePool<NeuralTrainInput, PredictionOutput> predictionEnginePool)
         {
             if (initilized)
                 return;
@@ -250,12 +251,11 @@ namespace Philips.Chatbots.Engine.Test
 
             await trainDataCollection.InsertNew(displayTrainModel);
 
-            var trainer = MlEnginesProvider.GetOrCreateTrainEngine<NeuralTrainEngine>();
-            trainer.BuildAndSaveModel();
+            //Build and tran the model
+            new NeuralTrainingEngine().BuildAndSaveModel();
 
             List<string> mlTestData = new List<string> { "my mobile screen is broken", "my speaker is not working", "broken screen" };
-            var predEngine = MlEnginesProvider.GetOrCreatePredictionEngine<NeualPredictionEngine>();
-            var output = mlTestData.Select(item => linkCollection.FindOneById(predEngine.Predict(new NeuralTrainInput { Text = item })._id).Result.Name).ToList();
+            var output = mlTestData.Select(item => linkCollection.FindOneById(predictionEnginePool.Predict(nameof(NeuralPredictionEngine), new NeuralTrainInput { Text = item })._id).Result.Name).ToList();
             #endregion
             initilized = true;
         }

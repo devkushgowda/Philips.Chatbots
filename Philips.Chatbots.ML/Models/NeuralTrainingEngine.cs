@@ -11,7 +11,7 @@ using static Philips.Chatbots.Database.Common.DbAlias;
 namespace Philips.Chatbots.ML.Models
 {
     /// <summary>
-    /// Neural train model.
+    /// Neural training data model.
     /// </summary>
     public class NeuralTrainInput : IMlData
     {
@@ -20,14 +20,14 @@ namespace Philips.Chatbots.ML.Models
     }
 
     /// <summary>
-    /// Neural train engine.
+    /// Neural nodes training engine.
     /// </summary>
-    public class NeuralTrainEngine : AbstractTrainModel<NeuralTrainInput, PredictionOutput>
+    public class NeuralTrainingEngine : AbstractTrainModel<NeuralTrainInput, PredictionOutput>
     {
         private const string dataFolder = "data";
         private static string dataFolderPath = Path.Combine(Environment.CurrentDirectory, dataFolder);
 
-        public static string ModelFilePath = Path.Combine(dataFolderPath, $"{nameof(NeuralTrainEngine).ToLower()}.zip");
+        public static string ModelFilePath = Path.Combine(dataFolderPath, $"{nameof(NeuralTrainingEngine).ToLower()}.zip");
 
         public override string ModelOutputPath => ModelFilePath;
 
@@ -35,7 +35,7 @@ namespace Philips.Chatbots.ML.Models
         /// Load data from DB.
         /// </summary>
         /// <returns></returns>
-        public override IEnumerable<NeuralTrainInput> LoadData()
+        public override List<NeuralTrainInput> LoadData()
         {
             List<NeuralTrainInput> result = new List<NeuralTrainInput>();
 
@@ -53,11 +53,15 @@ namespace Philips.Chatbots.ML.Models
         public override EstimatorChain<KeyToValueMappingTransformer> TransformAndBuildPipeline()
         {
             var fText = $"{nameof(NeuralTrainInput.Text)}Featurized";
+            var transformedData = _mlContext.Transforms.Text.FeaturizeText(inputColumnName: nameof(NeuralTrainInput.Text), outputColumnName: fText)
+                .Append(_mlContext.Transforms.Concatenate("Features", fText));
+
+
+            if (_enableCache)
+                transformedData.AppendCacheCheckpoint(_mlContext);   //Remove for large datasets.
+
             var processedData = _mlContext.Transforms.Conversion.MapValueToKey(inputColumnName: nameof(NeuralTrainInput._id), outputColumnName: "Label")
-                .Append(_mlContext.Transforms.Text.FeaturizeText(inputColumnName: nameof(NeuralTrainInput.Text), outputColumnName: fText)
-                .Append(_mlContext.Transforms.Concatenate("Features", fText))
-                .AppendCacheCheckpoint(_mlContext)   //Remove for large datasets.
-                );
+                .Append(transformedData);
 
             var result = processedData.Append(_mlContext.MulticlassClassification.Trainers.SdcaMaximumEntropy("Label", "Features"))
          .Append(_mlContext.Transforms.Conversion.MapKeyToValue("PredictedLabel"));  //Build pipeline

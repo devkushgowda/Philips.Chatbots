@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder;
+using Microsoft.Extensions.ML;
 using Philips.Chatbots.Engine.Interfaces;
 using Philips.Chatbots.Engine.Request;
 using Philips.Chatbots.Engine.Requst.Handlers;
+using Philips.Chatbots.ML.Interfaces;
+using Philips.Chatbots.ML.Models;
 
 namespace Philips.Chatbots.Engine.Session
 {
@@ -17,14 +20,14 @@ namespace Philips.Chatbots.Engine.Session
 
         private static readonly IRequestPipeline RequestPipeline = new RequestPipeLine { Pipeline = new List<IRequestHandler> { new AlphaRequestHandler() } };
 
-        public async static Task<RequestState> GetOrCreateUserState(this ITurnContext userContext, string botId)
+        public async static Task<RequestState> GetOrCreateUserState(this ITurnContext userContext, string botId, PredictionEnginePool<NeuralTrainInput, PredictionOutput> predictionEngine)
         {
             var id = "AnyId";// userContext.Activity.Id;
             RequestState res;
             if (!_requestStateCache.TryGetValue(id, out res))
             {
                 res = new RequestState();
-                await res.Initilize(id, botId, RequestPipeline);
+                await res.Initilize(id, botId, RequestPipeline, predictionEngine);
                 _requestStateCache.TryAdd(res.UserId, res);
             }
             return res;

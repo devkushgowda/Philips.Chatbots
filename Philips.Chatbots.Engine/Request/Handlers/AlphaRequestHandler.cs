@@ -10,8 +10,6 @@ using Philips.Chatbots.Session;
 using Philips.Chatbots.Engine.Request.Extensions;
 using Philips.Chatbots.Data.Models;
 using static Philips.Chatbots.Database.Common.DbAlias;
-using Philips.Chatbots.ML.Models;
-using Philips.Chatbots.Engine.Storage;
 
 namespace Philips.Chatbots.Engine.Requst.Handlers
 {
@@ -77,8 +75,8 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                         }
                         else
                         {
-                            var res = MlEnginesProvider.GetOrCreatePredictionEngine<NeualPredictionEngine>().Predict(new NeuralTrainInput { Text = text });
-                            var nextLink = await DbLinkCollection.FindOneById(res._id);
+                            var nextNodeId = requestState.PredictNode(text);
+                            var nextLink = await DbLinkCollection.FindOneById(nextNodeId);
                             if (nextLink != null)
                             {
                                 requestState.StepForward(nextLink);
@@ -184,7 +182,7 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                                     (await action.BuildActionRespose(turnContext)).ForEach(item => turnContext.SendActivityAsync(item));
 
                                     await SendReply(turnContext, StringsProvider.TryGet(BotResourceKeyConstants.Feedback), SuggestionExtension.GetFeedbackSuggestionActions());
-                  
+
                                     requestState.CurrentState = ChatStateType.RecordFeedback;
                                 }
                                 break;
@@ -247,7 +245,6 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
         private async Task SendResponseForCurrentNode(ITurnContext turnContext, RequestState requestState)
         {
             var curLink = requestState.CurrentLink;
-            Activity reply;
 
             var isExpression = await EvaluateExpression(turnContext, requestState);
 

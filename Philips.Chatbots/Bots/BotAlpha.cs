@@ -2,9 +2,12 @@
 using System.Threading.Tasks;
 using log4net;
 using Microsoft.Bot.Builder;
+using Microsoft.Extensions.ML;
 using Philips.Chatbots.Common.Logging;
 using Philips.Chatbots.Engine.Session;
 using Philips.Chatbots.Engine.Test;
+using Philips.Chatbots.ML.Interfaces;
+using Philips.Chatbots.ML.Models;
 
 namespace Philips.Chatbots.Bots
 {
@@ -17,6 +20,13 @@ namespace Philips.Chatbots.Bots
         /// Logger.
         /// </summary>
         private static ILog log = LogHelper.GetLogger<BotAlpha>();
+
+        private PredictionEnginePool<NeuralTrainInput, PredictionOutput> predictionEnginePool;
+
+        public BotAlpha(PredictionEnginePool<NeuralTrainInput, PredictionOutput> predictionEnginePool)
+        {
+            this.predictionEnginePool = predictionEnginePool;
+        }
 
         /// <summary>
         /// Id used to access the bot configuration in DB.
@@ -31,8 +41,8 @@ namespace Philips.Chatbots.Bots
         /// <returns></returns>
         public async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default(CancellationToken))
         {
-            await BotDbTestClass.Feed(BotAlpha.Id); //Recreates DB in first request, Comment if you want to retain old data.
-            var requestState = await turnContext.GetOrCreateUserState(BotAlpha.Id);
+            await BotDbTestClass.Feed(BotAlpha.Id, predictionEnginePool); //Recreates DB in first request, Comment if you want to retain old data.
+            var requestState = await turnContext.GetOrCreateUserState(BotAlpha.Id, predictionEnginePool);
             await requestState.HandleRequest(turnContext);
         }
     }

@@ -1,9 +1,12 @@
 ﻿using Microsoft.Bot.Builder;
+using Microsoft.Extensions.ML;
 using Philips.Chatbots.Data.Models;
 using Philips.Chatbots.Data.Models.Neural;
 using Philips.Chatbots.Database.Extension;
 using Philips.Chatbots.Engine.Interfaces;
 using Philips.Chatbots.Engine.Request.Extensions;
+using Philips.Chatbots.ML.Interfaces;
+using Philips.Chatbots.ML.Models;
 using Philips.Chatbots.Session;
 using System;
 using System.Collections.Generic;
@@ -30,25 +33,28 @@ namespace Philips.Chatbots.Engine.Session
     /// </summary>
     public class RequestState
     {
-        private NeuraLinkModel rootLink;
-        private NeuraLinkModel currentLink;
-        private ChatStateType currentState = ChatStateType.Start;
+        private NeuraLinkModel _rootLink;
+        private NeuraLinkModel _currentLink;
+        private ChatStateType _currentState = ChatStateType.Start;
         private string _botId;
+        private string _userId;
+        private PredictionEnginePool<NeuralTrainInput, PredictionOutput> _predictionEnginePool;
+        private IRequestPipeline _requestPipeline;
+        private Stack<NeuraLinkModel> _linkHistory = new Stack<NeuraLinkModel>();
 
+        public Stack<NeuraLinkModel> LinkHistory { get => _linkHistory; set => _linkHistory = value; }
+
+        public ChatStateType CurrentState { get => _currentState; set => _currentState = value; }
 
         public string BotId => _botId;
 
-        public string UserId { get; set; }
+        public string UserId => _userId;
 
-        public ChatStateType CurrentState { get => currentState; set => currentState = value; }
+        public NeuraLinkModel CurrentLink => _currentLink;
 
-        public NeuraLinkModel CurrentLink => currentLink;
+        public NeuraLinkModel RootLink => _rootLink;
 
-        public NeuraLinkModel RootLink => rootLink;
-
-        public Stack<NeuraLinkModel> LinkHistory { get; set; } = new Stack<NeuraLinkModel>();
-
-        public IRequestPipeline RequestPipeline { get; set; }
+        public IRequestPipeline RequestPipeline => _requestPipeline;
 
         public RequestState()
         {
@@ -64,7 +70,7 @@ namespace Philips.Chatbots.Engine.Session
             bool res = LinkHistory.TryPop(out top);
             if (res)
             {
-                currentLink = top;
+                _currentLink = top;
                 CurrentState = ChatStateType.Start;
             }
             return res;
@@ -74,18 +80,21 @@ namespace Philips.Chatbots.Engine.Session
         {
             if (recordHistory)
                 LinkHistory.Push(link);
-            currentLink = link;
+            _currentLink = link;
             CurrentState = ChatStateType.Start;
         }
 
-        public async Task Initilize(string userId, string botId, IRequestPipeline pipeline)
+        public string PredictNode(string input) => _predictionEnginePool.Predict(nameof(NeuralPredictionEngine), new NeuralTrainInput { Text = input })._id;
+
+        public async Task Initilize(string userId, string botId, IRequestPipeline requestPipeline, PredictionEnginePool<NeuralTrainInput, PredictionOutput> predictionEnginePool)
         {
-            _botId = botId;
-            UserId = userId;
-            RequestPipeline = pipeline;
+            _botId = botId ?? throw new ArgumentNullException(nameof(botId));
+            _userId = userId ?? throw new ArgumentNullException(nameof(userId));
+            _requestPipeline = requestPipeline ?? throw new ArgumentNullException(nameof(requestPipeline));
+            _predictionEnginePool = predictionEnginePool ?? throw new ArgumentNullException(nameof(predictionEnginePool));
             var rootId = await DbBotCollection.GetRootById(BotId);
-            currentLink = await DbLinkCollection.FindOneById(rootId ?? throw new InvalidOperationException($"Root does not exists for bot: {botId}"));
-            rootLink = CurrentLink;
+            _currentLink = await DbLinkCollection.FindOneById(rootId ?? throw new InvalidOperationException($"Root does not exists for bot: {botId}"));
+            _rootLink = CurrentLink;
             LinkHistory.Push(CurrentLink);
         }
 

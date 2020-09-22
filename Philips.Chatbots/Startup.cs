@@ -6,8 +6,11 @@ using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ML;
 using Philips.Chatbots.Bots;
 using Philips.Chatbots.Database.MongoDB;
+using Philips.Chatbots.ML.Interfaces;
+using Philips.Chatbots.ML.Models;
 using System;
 using System.IO;
 
@@ -46,6 +49,10 @@ namespace Philips.Chatbots
                 options.CredentialProvider = new ConfigurationCredentialProvider(configuration);
             });
             services.AddSingleton(ConfigureLog4Net());
+
+            services.AddPredictionEnginePool<NeuralTrainInput, PredictionOutput>()
+                .FromFile(modelName: nameof(NeuralPredictionEngine), filePath: NeuralPredictionEngine.ModelFilePath, watchForChanges: true);
+
             MongoDbProvider.Connect();
         }
 
