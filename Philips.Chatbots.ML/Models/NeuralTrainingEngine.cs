@@ -24,10 +24,12 @@ namespace Philips.Chatbots.ML.Models
     /// </summary>
     public class NeuralTrainingEngine : AbstractTrainModel<NeuralTrainInput, PredictionOutput>
     {
+
         private const string dataFolder = "data";
         private static string dataFolderPath = Path.Combine(Environment.CurrentDirectory, dataFolder);
+        private static string dbDataFolderPath => BotConfiguration().Result?.Configuration?.DataFolder;
 
-        public static string ModelFilePath = Path.Combine(dataFolderPath, $"{nameof(NeuralTrainingEngine).ToLower()}.zip");
+        public static string ModelFilePath => Path.Combine(dbDataFolderPath ?? dataFolderPath, $"{DbLinkCollection.CollectionNamespace}.zip");
 
         public override string ModelOutputPath => ModelFilePath;
 
@@ -38,7 +40,6 @@ namespace Philips.Chatbots.ML.Models
         public override List<NeuralTrainInput> LoadData()
         {
             List<NeuralTrainInput> result = new List<NeuralTrainInput>();
-
             DbTrainDataCollection.Find(exp => true).ToList()
                 .ForEach(trainData => trainData.Dataset
                 .ForEach(text => result.Add(new NeuralTrainInput { _id = trainData._id, Text = text })

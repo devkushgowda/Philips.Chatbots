@@ -30,7 +30,7 @@ namespace Philips.Chatbots.Engine.Request.Extensions
         /// <param name="curLink"></param>
         /// <param name="appendCommonActions"></param>
         /// <returns></returns>
-        public static SuggestedActions GetChildSuggestionActions(this NeuraLinkModel curLink, bool appendCommonActions = true)
+        public static SuggestedActions GetChildSuggestionActions(this NeuralLinkModel curLink, bool appendCommonActions = true)
         {
             curLink.CildrenRank.Sort((x, y) => y.Value.CompareTo(x.Value));
 
@@ -70,7 +70,7 @@ namespace Philips.Chatbots.Engine.Request.Extensions
         /// <param name="curLink"></param>
         /// <param name="appendCommonActions"></param>
         /// <returns></returns>
-        public static SuggestedActions GetHintSuggestionActions(this NeuraLinkModel curLink, bool appendCommonActions = true)
+        public static SuggestedActions GetHintSuggestionActions(this NeuralLinkModel curLink, bool appendCommonActions = true)
         {
             var result = new SuggestedActions()
             {

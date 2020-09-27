@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using MongoDB.Driver;
 using Philips.Chatbots.Data.Models.Neural;
@@ -62,10 +61,10 @@ namespace Philips.Chatbots.Database.Extension
         /// <param name="collection"></param>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static async Task<IEnumerable<T>> FindOneById<T>(this IMongoCollection<T> collection, string id) where T : INeuralTrainDataModel
+        public static async Task<NeuraTrainDataModel> FindOneById<T>(this IMongoCollection<T> collection, string id) where T : NeuraTrainDataModel
         {
             var result = await collection.FindAsync(item => item._id == id);
-            return result.ToEnumerable();
+            return result.FirstOrDefault();
         }
 
         /// <summary>

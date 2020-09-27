@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Forms\Loader\New folder\**" />
+    <EmbeddedResource Remove="Forms\Loader\New folder\**" />
+    <None Remove="Forms\Loader\New folder\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Forms\Dialog.cs" />
+    <Compile Remove="Forms\Dialog.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove="Forms\Dialog.resx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Philips.Chatbots.Data.Models\Philips.Chatbots.Data.Models.csproj" />
+    <ProjectReference Include="..\Philips.Chatbots.Database\Philips.Chatbots.Database.csproj" />
+    <ProjectReference Include="..\Philips.Chatbots.ML\Philips.Chatbots.ML.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

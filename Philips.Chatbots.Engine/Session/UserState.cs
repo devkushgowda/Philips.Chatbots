@@ -33,16 +33,16 @@ namespace Philips.Chatbots.Engine.Session
     /// </summary>
     public class RequestState
     {
-        private NeuraLinkModel _rootLink;
-        private NeuraLinkModel _currentLink;
+        private NeuralLinkModel _rootLink;
+        private NeuralLinkModel _currentLink;
         private ChatStateType _currentState = ChatStateType.Start;
         private string _botId;
         private string _userId;
         private PredictionEnginePool<NeuralTrainInput, PredictionOutput> _predictionEnginePool;
         private IRequestPipeline _requestPipeline;
-        private Stack<NeuraLinkModel> _linkHistory = new Stack<NeuraLinkModel>();
+        private Stack<NeuralLinkModel> _linkHistory = new Stack<NeuralLinkModel>();
 
-        public Stack<NeuraLinkModel> LinkHistory { get => _linkHistory; set => _linkHistory = value; }
+        public Stack<NeuralLinkModel> LinkHistory { get => _linkHistory; set => _linkHistory = value; }
 
         public ChatStateType CurrentState { get => _currentState; set => _currentState = value; }
 
@@ -50,9 +50,9 @@ namespace Philips.Chatbots.Engine.Session
 
         public string UserId => _userId;
 
-        public NeuraLinkModel CurrentLink => _currentLink;
+        public NeuralLinkModel CurrentLink => _currentLink;
 
-        public NeuraLinkModel RootLink => _rootLink;
+        public NeuralLinkModel RootLink => _rootLink;
 
         public IRequestPipeline RequestPipeline => _requestPipeline;
 
@@ -66,7 +66,7 @@ namespace Philips.Chatbots.Engine.Session
             if (LinkHistory.Count < 2)  //Ignore root
                 return false;
 
-            NeuraLinkModel top;
+            NeuralLinkModel top;
             bool res = LinkHistory.TryPop(out top);
             if (res)
             {
@@ -76,7 +76,7 @@ namespace Philips.Chatbots.Engine.Session
             return res;
         }
 
-        public void StepForward(NeuraLinkModel link, bool recordHistory = true)
+        public void StepForward(NeuralLinkModel link, bool recordHistory = true)
         {
             if (recordHistory)
                 LinkHistory.Push(link);
@@ -92,8 +92,8 @@ namespace Philips.Chatbots.Engine.Session
             _userId = userId ?? throw new ArgumentNullException(nameof(userId));
             _requestPipeline = requestPipeline ?? throw new ArgumentNullException(nameof(requestPipeline));
             _predictionEnginePool = predictionEnginePool ?? throw new ArgumentNullException(nameof(predictionEnginePool));
-            var rootId = await DbBotCollection.GetRootById(BotId);
-            _currentLink = await DbLinkCollection.FindOneById(rootId ?? throw new InvalidOperationException($"Root does not exists for bot: {botId}"));
+            var chatProfile = await CurrentChatProfile();
+            _currentLink = await DbLinkCollection.FindOneById(chatProfile?.Root ?? throw new InvalidOperationException($"Root does not exists for bot: {botId}"));
             _rootLink = CurrentLink;
             LinkHistory.Push(CurrentLink);
         }

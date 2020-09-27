@@ -20,7 +20,7 @@ namespace Philips.Chatbots.Database.Extension
         /// <param name="id"></param>
         /// <param name="nodeId"></param>
         /// <returns></returns>
-        public static async Task<bool> UpdateNeuralRankById<T>(this IMongoCollection<T> collection, string id, string nodeId) where T : NeuraLinkModel
+        public static async Task<bool> UpdateNeuralRankById<T>(this IMongoCollection<T> collection, string id, string nodeId) where T : NeuralLinkModel
         {
             var result = await collection.UpdateOneAsync(item => item._id == id && item.CildrenRank.Any(val => val.Key == nodeId),
                 Builders<T>.Update.Inc(x => x.CildrenRank[-1].Value, 1));
@@ -35,7 +35,7 @@ namespace Philips.Chatbots.Database.Extension
         /// <param name="id"></param>
         /// <param name="exp"></param>
         /// <returns></returns>
-        public static async Task<bool> SetNeuralExpById<T>(this IMongoCollection<T> collection, string id, INeuralExpression exp) where T : NeuraLinkModel
+        public static async Task<bool> SetNeuralExpById<T>(this IMongoCollection<T> collection, string id, INeuralExpression exp) where T : NeuralLinkModel
         {
             var result = await collection.UpdateOneAsync(item => item._id == id,
                 Builders<T>.Update.Set(x => x.NeuralExp, exp));
@@ -50,7 +50,7 @@ namespace Philips.Chatbots.Database.Extension
         /// <param name="id"></param>
         /// <param name="actionLink"></param>
         /// <returns></returns>
-        public static async Task<bool> SetNeuralExpForwardLinkById<T>(this IMongoCollection<T> collection, string id, ActionLink actionLink) where T : NeuraLinkModel
+        public static async Task<bool> SetNeuralExpForwardLinkById<T>(this IMongoCollection<T> collection, string id, ActionLink actionLink) where T : NeuralLinkModel
         {
             var result = await collection.UpdateOneAsync(item => item._id == id,
                 Builders<T>.Update.Set(x => ((DecisionExpression)x.NeuralExp).ForwardAction, actionLink));
@@ -65,7 +65,7 @@ namespace Philips.Chatbots.Database.Extension
         /// <param name="id"></param>
         /// <param name="actionLink"></param>
         /// <returns></returns>
-        public static async Task<bool> SetNeuralExpFallbackLinkById<T>(this IMongoCollection<T> collection, string id, ActionLink actionLink) where T : NeuraLinkModel
+        public static async Task<bool> SetNeuralExpFallbackLinkById<T>(this IMongoCollection<T> collection, string id, ActionLink actionLink) where T : NeuralLinkModel
         {
             var result = await collection.UpdateOneAsync(item => item._id == id,
                 Builders<T>.Update.Set(x => ((DecisionExpression)x.NeuralExp).FallbackAction, actionLink));
@@ -80,7 +80,7 @@ namespace Philips.Chatbots.Database.Extension
         /// <param name="parentId"></param>
         /// <param name="val"></param>
         /// <returns></returns>
-        public static async Task<T> InsertChildById<T>(this IMongoCollection<T> collection, string parentId, T val) where T : NeuraLinkModel
+        public static async Task<T> InsertChildById<T>(this IMongoCollection<T> collection, string parentId, T val) where T : NeuralLinkModel
         {
             val._id = Guid.NewGuid().ToString();
             var res = await collection.AddChildLinkById(parentId, val._id);
@@ -98,7 +98,7 @@ namespace Philips.Chatbots.Database.Extension
         /// <param name="id"></param>
         /// <param name="val"></param>
         /// <returns></returns>
-        public static async Task<bool> AddNoteById<T>(this IMongoCollection<T> collection, string id, string val) where T : NeuraLinkModel
+        public static async Task<bool> AddNoteById<T>(this IMongoCollection<T> collection, string id, string val) where T : NeuralLinkModel
         {
             var res = await collection.UpdateOneAsync(_ => _._id == id,
                Builders<T>.Update.AddToSet(_ => _.Notes, val));
@@ -113,7 +113,7 @@ namespace Philips.Chatbots.Database.Extension
         /// <param name="id"></param>
         /// <param name="val"></param>
         /// <returns></returns>
-        public static async Task<bool> RemoveNoteById<T>(this IMongoCollection<T> collection, string id, string val) where T : NeuraLinkModel
+        public static async Task<bool> RemoveNoteById<T>(this IMongoCollection<T> collection, string id, string val) where T : NeuralLinkModel
         {
             var res = await collection.UpdateOneAsync(_ => _._id == id,
                Builders<T>.Update.Pull(_ => _.Notes, val));
@@ -128,7 +128,7 @@ namespace Philips.Chatbots.Database.Extension
         /// <param name="id"></param>
         /// <param name="val"></param>
         /// <returns></returns>
-        public static async Task<bool> AddLabelById<T>(this IMongoCollection<T> collection, string id, string val) where T : NeuraLinkModel
+        public static async Task<bool> AddLabelById<T>(this IMongoCollection<T> collection, string id, string val) where T : NeuralLinkModel
         {
             var res = await collection.UpdateOneAsync(_ => _._id == id,
                Builders<T>.Update.AddToSet(_ => _.Labels, val));
@@ -143,7 +143,7 @@ namespace Philips.Chatbots.Database.Extension
         /// <param name="id"></param>
         /// <param name="val"></param>
         /// <returns></returns>
-        public static async Task<bool> RemoveLabelById<T>(this IMongoCollection<T> collection, string id, string val) where T : NeuraLinkModel
+        public static async Task<bool> RemoveLabelById<T>(this IMongoCollection<T> collection, string id, string val) where T : NeuralLinkModel
         {
             var res = await collection.UpdateOneAsync(_ => _._id == id,
                Builders<T>.Update.Pull(_ => _.Labels, val));
@@ -158,7 +158,7 @@ namespace Philips.Chatbots.Database.Extension
         /// <param name="parentId"></param>
         /// <param name="childId"></param>
         /// <returns></returns>
-        public static async Task<bool> LinkParentChild<T>(this IMongoCollection<T> collection, string parentId, string childId) where T : NeuraLinkModel
+        public static async Task<bool> LinkParentChild<T>(this IMongoCollection<T> collection, string parentId, string childId) where T : NeuralLinkModel
         {
             return await collection.AddChildLinkById(parentId, childId) && await collection.AddParentLinkById(childId, parentId);
         }
@@ -171,13 +171,30 @@ namespace Philips.Chatbots.Database.Extension
         /// <param name="parentId"></param>
         /// <param name="childId"></param>
         /// <returns></returns>
-        public static async Task<bool> UnLinkParentChild<T>(this IMongoCollection<T> collection, string parentId, string childId) where T : NeuraLinkModel
+        public static async Task<bool> UnLinkParentChild<T>(this IMongoCollection<T> collection, string parentId, string childId) where T : NeuralLinkModel
         {
             return await collection.RemoveChildLinkById(parentId, childId) && await collection.RemoveParentLinkById(childId, parentId);
         }
 
+        /// <summary>
+        /// Deep delete node and its reference links from all the node.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="collection"></param>
+        /// <param name="node"></param>
+        /// <returns></returns>
+        public static async Task<bool> RemoveAndUnlinkFromParents<T>(this IMongoCollection<T> collection, T node) where T : NeuralLinkModel
+        {
+            var res = await collection.RemoveOneById(node._id);
+            foreach (var parentId in node.Parents)
+            {
+                res = res && await collection.RemoveChildLinkById(parentId, node._id);
+            }
+            return res;
+        }
+
         #region privateMethods
-        private static async Task<bool> AddParentLinkById<T>(this IMongoCollection<T> collection, string childId, string parentId) where T : NeuraLinkModel
+        private static async Task<bool> AddParentLinkById<T>(this IMongoCollection<T> collection, string childId, string parentId) where T : NeuralLinkModel
         {
             //Add parent link to child.
             var res = await collection.UpdateOneAsync(_ => _._id == childId,
@@ -185,7 +202,7 @@ namespace Philips.Chatbots.Database.Extension
             return res.ModifiedCount > 0;
         }
 
-        private static async Task<bool> AddChildLinkById<T>(this IMongoCollection<T> collection, string parentId, string childId) where T : NeuraLinkModel
+        private static async Task<bool> AddChildLinkById<T>(this IMongoCollection<T> collection, string parentId, string childId) where T : NeuralLinkModel
         {
             //Add child link to parent.
             var res = await collection.UpdateOneAsync(_ => _._id == parentId,
@@ -193,7 +210,7 @@ namespace Philips.Chatbots.Database.Extension
             return res.ModifiedCount > 0;
         }
 
-        private static async Task<bool> RemoveChildLinkById<T>(this IMongoCollection<T> collection, string parentId, string childId) where T : NeuraLinkModel
+        private static async Task<bool> RemoveChildLinkById<T>(this IMongoCollection<T> collection, string parentId, string childId) where T : NeuralLinkModel
         {
             //Remove child link in parent.
             var result = await collection.UpdateOneAsync(item => item._id == parentId,
@@ -201,7 +218,7 @@ namespace Philips.Chatbots.Database.Extension
             return result.ModifiedCount > 0;
         }
 
-        private static async Task<bool> RemoveParentLinkById<T>(this IMongoCollection<T> collection, string childId, string parentId) where T : NeuraLinkModel
+        private static async Task<bool> RemoveParentLinkById<T>(this IMongoCollection<T> collection, string childId, string parentId) where T : NeuralLinkModel
         {
             //Remove parent link in child.
             var result = await collection.UpdateOneAsync(item => item._id == childId,

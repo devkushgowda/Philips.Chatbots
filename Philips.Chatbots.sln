@@ -19,10 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Philips.Chatbots.Actions", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Philips.Chatbots.ML", "Philips.Chatbots.ML\Philips.Chatbots.ML.csproj", "{208AE3DA-F182-4EFC-85E7-84B3F34B0056}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{07CD1C2A-23B1-47EC-ACB5-851BBF9189DC}"
-	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Philips.Chatbots.Desktop.Portal", "Philips.Chatbots.Desktop.Portal\Philips.Chatbots.Desktop.Portal.csproj", "{8855C87A-A86F-44C7-842C-0BE6B4BF583F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -62,6 +59,10 @@ Global
 		{208AE3DA-F182-4EFC-85E7-84B3F34B0056}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{208AE3DA-F182-4EFC-85E7-84B3F34B0056}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{208AE3DA-F182-4EFC-85E7-84B3F34B0056}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8855C87A-A86F-44C7-842C-0BE6B4BF583F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8855C87A-A86F-44C7-842C-0BE6B4BF583F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8855C87A-A86F-44C7-842C-0BE6B4BF583F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8855C87A-A86F-44C7-842C-0BE6B4BF583F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

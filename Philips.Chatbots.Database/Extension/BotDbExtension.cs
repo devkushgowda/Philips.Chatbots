@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Driver;
 using Philips.Chatbots.Data.Models;
@@ -10,45 +11,106 @@ namespace Philips.Chatbots.Database.Extension
     public static class BotDbExtension
     {
         /// <summary>
-        /// Insert new bot configuration.
+        /// Upsert bot configuration.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="collection"></param>
         /// <param name="val"></param>
-        /// <param name="type"></param>
         /// <returns></returns>
-        public static async Task<T> InsertNew<T>(this IMongoCollection<T> collection, T val, string id) where T : BotModel
+        public static async Task<T> InsertNewOrUpdate<T>(this IMongoCollection<T> collection, T val) where T : BotModel
         {
-            if (string.IsNullOrWhiteSpace(id))
-                throw new ArgumentNullException(nameof(id));
-            val._id = id;
+            if (string.IsNullOrWhiteSpace(val._id))
+                throw new ArgumentNullException(nameof(val._id));
             var res = await collection.ReplaceOneAsync(item => (item._id == val._id), val, new ReplaceOptions { IsUpsert = true });
             return val;
         }
 
+
         /// <summary>
-        /// Get root of the bot.
+        /// Get current active chat profile.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="collection"></param>
-        /// <param name="type"></param>
+        /// <param name="botId"></param>
         /// <returns></returns>
-        public static async Task<string> GetRootById<T>(this IMongoCollection<T> collection, string id) where T : BotModel
+        public static async Task<BotChatProfile> GetActiveChatProfile<T>(this IMongoCollection<T> collection, string botId) where T : BotModel
         {
-            return await collection.GetFieldValue(id, item => item.Configuration.RootNode);
+            var config = await collection.GetFieldValue(botId, item => item.Configuration);
+            return config?.ChatProfiles?.FirstOrDefault(x => x.Name == config.ActiveProfile);
         }
 
         /// <summary>
-        /// Set root of the bot.
+        /// Get chat profile by botId.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="collection"></param>
-        /// <param name="type"></param>
-        /// <param name="val"></param>
+        /// <param name="botId"></param>
+        /// <param name="profile"></param>
         /// <returns></returns>
-        public static async Task<bool> SetRootNodeById<T>(this IMongoCollection<T> collection, string id, string val) where T : BotModel
+        public static async Task<BotChatProfile> GetChatProfileById<T>(this IMongoCollection<T> collection, string botId, string profile) where T : BotModel
         {
-            var result = await collection.UpdateOneAsync(item => item._id == id, Builders<T>.Update.Set(item => item.Configuration.RootNode, val));
+            var config = await collection.GetFieldValue(botId, item => item.Configuration);
+            return config?.ChatProfiles?.FirstOrDefault(x => x.Name == profile);
+        }
+
+        /// <summary>
+        /// Remove chat profile.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="collection"></param>
+        /// <param name="botId"></param>
+        /// <param name="profile"></param>
+        /// <returns></returns>
+        public static async Task<bool> RemoveChatProfileById<T>(this IMongoCollection<T> collection, string botId, string profile) where T : BotModel
+        {
+            var result = await collection.UpdateOneAsync(item => item._id == botId,
+            Builders<T>.Update.PullFilter<BotChatProfile>(x => x.Configuration.ChatProfiles, y => y.Name == profile));
+            return result?.ModifiedCount > 0;
+        }
+
+        /// <summary>
+        /// Add new chat profile or returns if matching profile name already exists.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="collection"></param>
+        /// <param name="botId"></param>
+        /// <param name="profile"></param>
+        /// <returns></returns>
+        public static async Task<BotChatProfile> AddOrUpdateChatProfileById<T>(this IMongoCollection<T> collection, string botId, BotChatProfile profile) where T : BotModel
+        {
+            if (string.IsNullOrWhiteSpace(profile.Name))
+                throw new ArgumentNullException(nameof(profile.Name));
+            var res = await collection.GetChatProfileById(botId, profile.Name);
+            if (res != null)
+            {
+                return res;
+            }
+            else
+            {
+                var result = await collection.UpdateOneAsync(item => item._id == botId, Builders<T>.Update.AddToSet(item => item.Configuration.ChatProfiles, profile));
+                return result?.ModifiedCount > 0 ? profile : null;
+            }
+        }
+
+        /// <summary>
+        /// Update Root for specific chat profile
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="collection"></param>
+        /// <param name="botId"></param>
+        /// <param name="rootId"></param>
+        /// <param name="profile"></param>
+        /// <returns></returns>
+        public static async Task<bool> SetRootNodeById<T>(this IMongoCollection<T> collection, string botId, string rootId, string profile = BotChatProfile.DefaultProfile) where T : BotModel
+        {
+            var node = await collection.GetChatProfileById(botId, profile);
+            if (node == null)
+            {
+                node = new BotChatProfile { Name = profile };
+                await collection.AddOrUpdateChatProfileById(botId, node);
+            }
+            var result = await collection.UpdateOneAsync(item => item._id == botId && item.Configuration.ChatProfiles.Any(val => val.Name == profile),
+                Builders<T>.Update.Set(x => x.Configuration.ChatProfiles[-1].Root, rootId));
             return result.ModifiedCount > 0;
         }
 
@@ -57,12 +119,12 @@ namespace Philips.Chatbots.Database.Extension
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="collection"></param>
-        /// <param name="type"></param>
+        /// <param name="botId"></param>
         /// <param name="val"></param>
         /// <returns></returns>
-        public static async Task<bool> AddStringResourceById<T>(this IMongoCollection<T> collection, string id, KeyValuePair<string, string> val) where T : BotModel
+        public static async Task<bool> AddStringResourceById<T>(this IMongoCollection<T> collection, string botId, KeyValuePair<string, string> val) where T : BotModel
         {
-            var result = await collection.UpdateOneAsync(item => item._id == id, Builders<T>.Update.AddToSet(item => item.Configuration.ResourceStrings, val));
+            var result = await collection.UpdateOneAsync(item => item._id == botId, Builders<T>.Update.AddToSet(item => item.Configuration.ResourceStrings, val));
             return result.ModifiedCount > 0;
         }
 
@@ -71,17 +133,31 @@ namespace Philips.Chatbots.Database.Extension
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="collection"></param>
-        /// <param name="id"></param>
+        /// <param name="botId"></param>
         /// <param name="vals"></param>
         /// <returns></returns>
-        public static async Task<bool> AddStringResourceBatchById<T>(this IMongoCollection<T> collection, string id, List<KeyValuePair<string, string>> vals) where T : BotModel
+        public static async Task<bool> AddStringResourceBatchById<T>(this IMongoCollection<T> collection, string botId, List<KeyValuePair<string, string>> vals) where T : BotModel
         {
             UpdateResult result = null;
             foreach (var val in vals)
             {
-                result = await collection.UpdateOneAsync(item => item._id == id, Builders<T>.Update.AddToSet(item => item.Configuration.ResourceStrings, val));
+                result = await collection.UpdateOneAsync(item => item._id == botId, Builders<T>.Update.AddToSet(item => item.Configuration.ResourceStrings, val));
             }
             return result?.ModifiedCount > 0;
+        }
+
+        /// <summary>
+        /// Set active profile.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="collection"></param>
+        /// <param name="botId"></param>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        public static async Task<bool> SetActiveChatProfileById<T>(this IMongoCollection<T> collection, string botId, string val) where T : BotModel
+        {
+            var result = await collection.UpdateOneAsync(item => item._id == botId, Builders<T>.Update.Set(item => item.Configuration.ActiveProfile, val));
+            return result.ModifiedCount > 0;
         }
 
         /// <summary>
@@ -89,26 +165,26 @@ namespace Philips.Chatbots.Database.Extension
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="collection"></param>
-        /// <param name="type"></param>
+        /// <param name="botId"></param>
         /// <param name="val"></param>
         /// <returns></returns>
-        public static async Task<bool> SetEndPointById<T>(this IMongoCollection<T> collection, string id, string val) where T : BotModel
+        public static async Task<bool> SetEndPointById<T>(this IMongoCollection<T> collection, string botId, string val) where T : BotModel
         {
-            var result = await collection.UpdateOneAsync(item => item._id == id, Builders<T>.Update.Set(item => item.EndPoint, val));
+            var result = await collection.UpdateOneAsync(item => item._id == botId, Builders<T>.Update.Set(item => item.EndPoint, val));
             return result.ModifiedCount > 0;
         }
 
         /// <summary>
-        /// Set description of the bot.
+        ///  Set description of the bot.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="collection"></param>
-        /// <param name="type"></param>
+        /// <param name="botId"></param>
         /// <param name="val"></param>
         /// <returns></returns>
-        public static async Task<bool> SetDescriptionById<T>(this IMongoCollection<T> collection, string id, string val) where T : BotModel
+        public static async Task<bool> SetDescriptionById<T>(this IMongoCollection<T> collection, string botId, string val) where T : BotModel
         {
-            var result = await collection.UpdateOneAsync(item => item._id == id, Builders<T>.Update.Set(item => item.Description, val));
+            var result = await collection.UpdateOneAsync(item => item._id == botId, Builders<T>.Update.Set(item => item.Description, val));
             return result.ModifiedCount > 0;
         }
 
@@ -117,11 +193,11 @@ namespace Philips.Chatbots.Database.Extension
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="collection"></param>
-        /// <param name="id"></param>
+        /// <param name="botId"></param>
         /// <returns></returns>
-        public static async Task<T> FindOneById<T>(this IMongoCollection<T> collection, string id) where T : BotModel
+        public static async Task<T> FindOneById<T>(this IMongoCollection<T> collection, string botId) where T : BotModel
         {
-            var result = await collection.FindAsync(item => item._id == id);
+            var result = await collection.FindAsync(item => item._id == botId);
             return result.FirstOrDefault();
         }
 
@@ -130,38 +206,25 @@ namespace Philips.Chatbots.Database.Extension
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="collection"></param>
-        /// <param name="id"></param>
+        /// <param name="botId"></param>
         /// <returns></returns>
-        public static async Task<bool> RemoveOneById<T>(this IMongoCollection<T> collection, string id) where T : BotModel
+        public static async Task<bool> RemoveOneById<T>(this IMongoCollection<T> collection, string botId) where T : BotModel
         {
-            var result = await collection.DeleteOneAsync(item => item._id == id);
+            var result = await collection.DeleteOneAsync(item => item._id == botId);
             return result.DeletedCount > 0;
         }
-
-        ///// <summary>
-        ///// Deletes all the records matching _id in DB.
-        ///// </summary>
-        ///// <typeparam name="T"></typeparam>
-        ///// <param name="collection"></param>
-        ///// <param name="id"></param>
-        ///// <returns></returns>
-        //public static async Task<long> RemoveManyById<T>(this IMongoCollection<T> collection, string id) where T : BotModel
-        //{
-        //    var result = await collection.DeleteManyAsync(item => item._id == id);
-        //    return result.DeletedCount;
-        //}
 
         /// <summary>
         /// Replaces single record matching _id in DB.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="collection"></param>
-        /// <param name="id"></param>
+        /// <param name="botId"></param>
         /// <param name="newValue"></param>
         /// <returns></returns>
-        public static async Task<bool> ReplaceOneById<T>(this IMongoCollection<T> collection, string id, T newValue) where T : BotModel
+        public static async Task<bool> ReplaceOneById<T>(this IMongoCollection<T> collection, string botId, T newValue) where T : BotModel
         {
-            var result = await collection.ReplaceOneAsync(item => item._id == id, newValue);
+            var result = await collection.ReplaceOneAsync(item => item._id == botId, newValue);
             return result.ModifiedCount > 0;
         }
 

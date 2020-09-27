@@ -110,7 +110,7 @@ namespace Philips.Chatbots.Data.Models.Neural
     public class ActionLink
     {
         public LinkType Type { get; set; }
-        public string Id { get; set; }
+        public string LinkId { get; set; }
     }
 
     /// <summary>
@@ -219,7 +219,6 @@ namespace Philips.Chatbots.Data.Models.Neural
         /// </summary>
         public string Hint { get; set; }
         public string QuestionTitle { get; set; }
-        public List<ActionItem> Options { get; set; }
 
         /// <summary>
         /// Forward action incase expression evaluated to true.

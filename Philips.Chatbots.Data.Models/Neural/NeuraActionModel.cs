@@ -34,7 +34,7 @@ namespace Philips.Chatbots.Data.Models.Neural
 
         public List<string> Labels { get; set; } = new List<string>();
 
-        public NeuraActionType Type { get; set; } = NeuraActionType.Support;
+        public ActionType Type { get; set; } = ActionType.Others;
 
         public List<string> Resources { get; set; } = new List<string>();
 

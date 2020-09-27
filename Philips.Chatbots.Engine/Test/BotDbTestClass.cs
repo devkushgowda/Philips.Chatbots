@@ -9,6 +9,7 @@ using Philips.Chatbots.ML.Models;
 using System.Linq;
 using Philips.Chatbots.ML.Interfaces;
 using Microsoft.Extensions.ML;
+using static Philips.Chatbots.Database.Common.DbAlias;
 
 namespace Philips.Chatbots.Engine.Test
 {
@@ -22,24 +23,24 @@ namespace Philips.Chatbots.Engine.Test
         {
             if (initilized)
                 return;
-
+            //string myProfile = "Test";
             await MongoDbProvider.DropDatabase();
-            var linkCollection = MongoDbProvider.GetCollection<NeuraLinkModel>();
-            var resourceCollection = MongoDbProvider.GetCollection<NeuralResourceModel>();
-            var actionCollection = MongoDbProvider.GetCollection<NeuralActionModel>();
-            var trainDataCollection = MongoDbProvider.GetCollection<NeuraTrainDataModel>();
-            var botCollection = MongoDbProvider.GetCollection<BotModel>();
+            //await DbBotCollection.InsertNew(new BotModel { _id = BotAlphaName, Configuration = new BotConfiguration { ActiveProfile = myProfile, ChatProfiles = new List<BotChatProfile> { new BotChatProfile { Name = myProfile } } } });
+            await DbBotCollection.SetRootNodeById(BotAlphaName, "");
+            await SyncChatProfile();
 
-            var botConfiguration = await botCollection.InsertNew(new BotModel
+            //  SyncChatProfile();
+
+            var botConfiguration = await DbBotCollection.InsertNewOrUpdate(new BotModel
             {
                 _id = botId,
                 Description = "Simple bot",
                 EndPoint = "https://localhost:44388/api/messages",
                 Configuration = new BotConfiguration { }
-            }, botId);
+            });
 
 
-            var superRootNode = await linkCollection.InsertNew(new NeuraLinkModel
+            var superRootNode = await DbLinkCollection.InsertNew(new NeuralLinkModel
             {
                 Name = "SuperRoot",
                 Notes = new List<string> { "Welcome to philips chatbot mobile device assistant beta version!" },
@@ -53,22 +54,22 @@ namespace Philips.Chatbots.Engine.Test
 
 
             //configure it as bot root node
-            await botCollection.SetRootNodeById(botId, superRootNode._id);
+            await DbBotCollection.SetRootNodeById(botId, superRootNode._id);
 
 
 
-            var nodeSimpleChatMode = await linkCollection.InsertChildById(superRootNode._id, new NeuraLinkModel
+            var nodeSimpleChatMode = await DbLinkCollection.InsertChildById(superRootNode._id, new NeuralLinkModel
             {
                 Name = "SimpleChatNode",
                 Title = $"[{BotResourceKeyConstants.WhatIssue}]"
             });
 
             //Link super root forward action to simple chat mode
-            await linkCollection.SetNeuralExpForwardLinkById(superRootNode._id, new ActionLink { Type = LinkType.NeuralLink, Id = nodeSimpleChatMode._id });
+            await DbLinkCollection.SetNeuralExpForwardLinkById(superRootNode._id, new ActionLink { Type = LinkType.NeuralLink, LinkId = nodeSimpleChatMode._id });
 
 
 
-            var nodeSound = await linkCollection.InsertChildById(nodeSimpleChatMode._id, new NeuraLinkModel
+            var nodeSound = await DbLinkCollection.InsertChildById(nodeSimpleChatMode._id, new NeuralLinkModel
             {
                 Name = "Sound/Speaker",
                 Title = $"[{BotResourceKeyConstants.SelectedIssue}]",
@@ -78,7 +79,7 @@ namespace Philips.Chatbots.Engine.Test
             #region sound
 
 
-            var resourceMute = await resourceCollection.InsertNew(new NeuralResourceModel
+            var resourceMute = await DbResourceCollection.InsertNew(new NeuralResourceModel
             {
                 Name = "NoSound",
                 IsLocal = false,
@@ -87,14 +88,14 @@ namespace Philips.Chatbots.Engine.Test
                 Title = "How to fix sound problem on any android"
             });
 
-            var actionMute = await actionCollection.InsertNew(new NeuralActionModel
+            var actionMute = await DbActionCollection.InsertNew(new NeuralActionModel
             {
                 Name = "NoSoundAction",
                 Title = $"[{BotResourceKeyConstants.FoundSolution}]",
                 Resources = new List<string> { $"{resourceMute._id}" }
             });
 
-            var resourceUnpleasantSound = await resourceCollection.InsertNew(new NeuralResourceModel
+            var resourceUnpleasantSound = await DbResourceCollection.InsertNew(new NeuralResourceModel
             {
                 Name = "UnpleasantSound0",
                 IsLocal = false,
@@ -102,7 +103,7 @@ namespace Philips.Chatbots.Engine.Test
                 Location = "https://www.youtube.com/watch?v=Y_hEEEt-Rb0",
                 Title = "[Solution] Mobile speaker producing noisy (crackling) sound fixed without​ replacing speaker"
             });
-            var resourceUnpleasantSound1 = await resourceCollection.InsertNew(new NeuralResourceModel
+            var resourceUnpleasantSound1 = await DbResourceCollection.InsertNew(new NeuralResourceModel
             {
                 Name = "UnpleasantSound1",
                 IsLocal = false,
@@ -111,14 +112,14 @@ namespace Philips.Chatbots.Engine.Test
                 Title = "[Solution] Mobile speaker producing noisy (crackling) sound fixed without​ replacing speaker"
             });
 
-            var actionUnpleasantSound = await actionCollection.InsertNew(new NeuralActionModel
+            var actionUnpleasantSound = await DbActionCollection.InsertNew(new NeuralActionModel
             {
                 Name = "UnpleasantSoundAction",
                 Title = $"[{BotResourceKeyConstants.FoundSolution}]",
                 Resources = new List<string> { resourceUnpleasantSound._id, resourceUnpleasantSound1._id }
             });
 
-            var resourceCustomerSupport = await resourceCollection.InsertNew(new NeuralResourceModel
+            var resourceCustomerSupport = await DbResourceCollection.InsertNew(new NeuralResourceModel
             {
                 Name = "customersupport ",
                 IsLocal = false,
@@ -127,14 +128,14 @@ namespace Philips.Chatbots.Engine.Test
                 Title = "Please reach us @support site"
             });
 
-            var actionCustomerSupport = await actionCollection.InsertNew(new NeuralActionModel
+            var actionCustomerSupport = await DbActionCollection.InsertNew(new NeuralActionModel
             {
                 Name = "customersupportAction",
                 Title = $"[{BotResourceKeyConstants.FoundSolution}]",
                 Resources = new List<string> { resourceCustomerSupport._id }
             });
 
-            var nodeNoSound = await linkCollection.InsertChildById(nodeSound._id, new NeuraLinkModel
+            var nodeNoSound = await DbLinkCollection.InsertChildById(nodeSound._id, new NeuralLinkModel
             {
                 Name = "No sound",
                 Title = "You have selected {Name} category issues!",
@@ -145,12 +146,12 @@ namespace Philips.Chatbots.Engine.Test
                     ForwardAction = new ActionLink
                     {
                         Type = LinkType.ActionLink,
-                        Id = actionMute._id
+                        LinkId = actionMute._id
                     }
                 }
             });
 
-            var nodeUnpleasantSound = await linkCollection.InsertChildById(nodeSound._id, new NeuraLinkModel
+            var nodeUnpleasantSound = await DbLinkCollection.InsertChildById(nodeSound._id, new NeuralLinkModel
             {
                 Name = "Unpleasant sound",
                 Title = $"[{BotResourceKeyConstants.SelectedIssue}]",
@@ -163,18 +164,18 @@ namespace Philips.Chatbots.Engine.Test
                     ForwardAction = new ActionLink
                     {
                         Type = LinkType.ActionLink,
-                        Id = actionUnpleasantSound._id
+                        LinkId = actionUnpleasantSound._id
                     },
                     FallbackAction = new ActionLink
                     {
                         Type = LinkType.ActionLink,
-                        Id = actionCustomerSupport._id
+                        LinkId = actionCustomerSupport._id
                     }
                 }
             }); ;
 
             #endregion
-            var nodeDisplay = await linkCollection.InsertChildById(nodeSimpleChatMode._id, new NeuraLinkModel
+            var nodeDisplay = await DbLinkCollection.InsertChildById(nodeSimpleChatMode._id, new NeuralLinkModel
             {
                 Name = "Display/Broken screen",
                 Title = $"[{BotResourceKeyConstants.SelectedIssue}]",
@@ -184,14 +185,14 @@ namespace Philips.Chatbots.Engine.Test
             #region display
 
             #endregion
-            var nodeBattery = await linkCollection.InsertChildById(nodeSimpleChatMode._id, new NeuraLinkModel
+            var nodeBattery = await DbLinkCollection.InsertChildById(nodeSimpleChatMode._id, new NeuralLinkModel
             {
                 Name = "Battery/Charging",
                 Title = $"[{BotResourceKeyConstants.SelectedIssue}]",
                 Notes = new List<string> { $"[{BotResourceKeyConstants.WeHelpYou}]", $"[{BotResourceKeyConstants.WhatIssue}]" }
             });
 
-            //await linkCollection.UnLinkParentChild(nodeSimpleChatMode._id, nodeBattery._id);
+            //await DbLinkCollection.UnLinkParentChild(nodeSimpleChatMode._id, nodeBattery._id);
 
             #region battery
 
@@ -217,7 +218,7 @@ namespace Philips.Chatbots.Engine.Test
                 new KeyValuePair<string, string>(BotResourceKeyConstants.CommonActionOptions, "Back:back,Exit:exit")
             };
 
-            await botCollection.AddStringResourceBatchById(botId, stringRes);
+            await DbBotCollection.AddStringResourceBatchById(botId, stringRes);
             #endregion
 
             #region ML model test data
@@ -234,7 +235,7 @@ namespace Philips.Chatbots.Engine.Test
                 }
             };
 
-            await trainDataCollection.InsertNew(speakerTrainModel);
+            await DbTrainDataCollection.InsertNew(speakerTrainModel);
 
             var displayTrainModel = new NeuraTrainDataModel
             {
@@ -249,13 +250,13 @@ namespace Philips.Chatbots.Engine.Test
                 }
             };
 
-            await trainDataCollection.InsertNew(displayTrainModel);
+            await DbTrainDataCollection.InsertNew(displayTrainModel);
 
             //Build and tran the model
             new NeuralTrainingEngine().BuildAndSaveModel();
 
             List<string> mlTestData = new List<string> { "my mobile screen is broken", "my speaker is not working", "broken screen" };
-            var output = mlTestData.Select(item => linkCollection.FindOneById(predictionEnginePool.Predict(nameof(NeuralPredictionEngine), new NeuralTrainInput { Text = item })._id).Result.Name).ToList();
+            var output = mlTestData.Select(item => DbLinkCollection.FindOneById(predictionEnginePool.Predict(nameof(NeuralPredictionEngine), new NeuralTrainInput { Text = item })._id).Result.Name).ToList();
             #endregion
             initilized = true;
         }

@@ -12,6 +12,12 @@ namespace Philips.Chatbots.Database.MongoDB
     /// </summary>
     public static class MongoDbProvider
     {
+        private static bool load = true;
+
+        static MongoDbProvider()
+        {
+            Connect();
+        }
 
         // MongoClient is thread safe
         private static MongoClient dbClient;
@@ -24,7 +30,12 @@ namespace Philips.Chatbots.Database.MongoDB
         public static void Connect(string connectionString = DatabaseConstants.LocalConnectionString)
         {
             RegisterClasses();
-            dbClient = new MongoClient(connectionString);
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+                dbClient = new MongoClient();
+            else
+                dbClient = new MongoClient(connectionString ?? DatabaseConstants.LocalConnectionString);
+
         }
 
         /// <summary>
@@ -32,10 +43,20 @@ namespace Philips.Chatbots.Database.MongoDB
         /// </summary>
         private static void RegisterClasses()
         {
-            BsonClassMap.RegisterClassMap<LinkExpression>();
-            BsonClassMap.RegisterClassMap<DecisionExpression>();
-            BsonClassMap.RegisterClassMap<ArithmeticOp>();
-            BsonClassMap.RegisterClassMap<RelationalOp>();
+            if (load)
+            {
+                BsonClassMap.RegisterClassMap<LinkExpression>();
+                BsonClassMap.RegisterClassMap<DecisionExpression>();
+
+                BsonClassMap.RegisterClassMap<ArithmeticOp>();
+                BsonClassMap.RegisterClassMap<RelationalOp>();
+                BsonClassMap.RegisterClassMap<ActionItem>();
+                BsonClassMap.RegisterClassMap<ActionLink>();
+                BsonClassMap.RegisterClassMap<ActionOption>();
+                BsonClassMap.RegisterClassMap<LinkType>();
+                BsonClassMap.RegisterClassMap<InnerExpEval>();
+                load = false;
+            }
 
         }
 

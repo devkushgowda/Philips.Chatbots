@@ -9,7 +9,7 @@ namespace Philips.Chatbots.Data.Models.Neural
     /// <summary>
     /// Neural link DB data model.
     /// </summary>
-    public class NeuraLinkModel : ILinkInfo, INeuraLinkModel, IDataModel
+    public class NeuralLinkModel : ILinkInfo, INeuraLinkModel, IDataModel
     {
         [BsonId(IdGenerator = typeof(StringObjectIdGenerator))]
         public string _id { get; set; }

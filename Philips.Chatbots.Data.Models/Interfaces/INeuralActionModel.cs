@@ -5,11 +5,14 @@ namespace Philips.Chatbots.Data.Models.Interfaces
     /// <summary>
     /// Neural action type.
     /// </summary>
-    public enum NeuraActionType
+    public enum ActionType
     {
-        Support = 0,
-        Script = 1,
-        Others = 2
+        Guide = 0,
+        ChatSupport = 1,
+        CallSupport = 2,
+        Script = 3,
+        Service = 4,
+        Others = 5
     }
 
     /// <summary>
@@ -25,6 +28,6 @@ namespace Philips.Chatbots.Data.Models.Interfaces
         /// <summary>
         /// Action type.
         /// </summary>
-        NeuraActionType Type { get; set; }
+        ActionType Type { get; set; }
     }
 }

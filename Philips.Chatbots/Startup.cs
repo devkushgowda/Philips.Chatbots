@@ -44,16 +44,21 @@ namespace Philips.Chatbots
                 .AddJsonFile(AppSettingsFile, true, true)
                 .AddEnvironmentVariables().Build();
             services.AddSingleton(configuration);
+
+            var connectionString = configuration.GetValue<string>("MongoDbConnectionString");
+
+            MongoDbProvider.Connect(connectionString);
+
             services.AddBot<BotAlpha>(options =>
             {
                 options.CredentialProvider = new ConfigurationCredentialProvider(configuration);
             });
+
             services.AddSingleton(ConfigureLog4Net());
 
             services.AddPredictionEnginePool<NeuralTrainInput, PredictionOutput>()
                 .FromFile(modelName: nameof(NeuralPredictionEngine), filePath: NeuralPredictionEngine.ModelFilePath, watchForChanges: true);
 
-            MongoDbProvider.Connect();
         }
 
         private ILoggerFactory ConfigureLog4Net(string logConfigFileName = LogConfigFile)

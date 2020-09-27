@@ -112,7 +112,7 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                             case "yes":
                                 {
                                     var childLink = curLink;
-                                    NeuraLinkModel parentLink = null;
+                                    NeuralLinkModel parentLink = null;
                                     while (requestState.LinkHistory.TryPop(out parentLink))
                                     {
                                         await DbLinkCollection.UpdateNeuralRankById(parentLink._id, childLink._id);
@@ -161,7 +161,7 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                         {
                             case LinkType.NeuralLink:
                                 {
-                                    var link = await DbLinkCollection.FindOneById(actionResult.Id);
+                                    var link = await DbLinkCollection.FindOneById(actionResult.LinkId);
                                     if (link != null)
                                     {
                                         curLink = link;
@@ -177,7 +177,7 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                                 break;
                             case LinkType.ActionLink:
                                 {
-                                    var action = await DbActionCollection.FindOneById(actionResult.Id);
+                                    var action = await DbActionCollection.FindOneById(actionResult.LinkId);
 
                                     (await action.BuildActionRespose(turnContext)).ForEach(item => turnContext.SendActivityAsync(item));
 

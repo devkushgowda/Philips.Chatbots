@@ -1,9 +1,11 @@
-﻿using Microsoft.ML;
+﻿using log4net;
+using Microsoft.ML;
 using Microsoft.ML.Data;
 using Microsoft.ML.Transforms;
+using Philips.Chatbots.Common.Logging;
 using Philips.Chatbots.ML.Interfaces;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Philips.Chatbots.ML
 {
@@ -16,12 +18,14 @@ namespace Philips.Chatbots.ML
         where Input : class, IMlData
         where Output : class, IMlData
     {
+        protected static ILog logger = LogHelper.GetLogger<AbstractTrainModel<Input, Output>>();
+
         protected long _dataCount = 0;
         protected MLContext _mlContext = new MLContext();
         protected IDataView _trainingDataView;
         protected ITransformer _trainedModel;
 
-        protected bool _enableCache => _dataCount < 100000;
+        protected bool _enableCache => _dataCount < 25000;
         public abstract string ModelOutputPath { get; }
 
         private void Save(string filePath)
@@ -37,11 +41,18 @@ namespace Philips.Chatbots.ML
 
         public void BuildAndSaveModel(string outputPath = null)
         {
-            var trainData = LoadData();
-            _dataCount = trainData.Count;
-            _trainingDataView = _mlContext.Data.LoadFromEnumerable<Input>(trainData);
-            BuildAndTrainModel();
-            Save(outputPath ?? ModelOutputPath);
+            try
+            {
+                var trainData = LoadData();
+                _dataCount = trainData.Count;
+                _trainingDataView = _mlContext.Data.LoadFromEnumerable<Input>(trainData);
+                BuildAndTrainModel();
+                Save(outputPath ?? ModelOutputPath);
+            }
+            catch (Exception e)
+            {
+                logger.Error(e);
+            }
         }
 
         public abstract List<Input> LoadData();
