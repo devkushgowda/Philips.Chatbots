@@ -22,6 +22,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Configuration\AppSettings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EditorConfigFiles Include="Configuration\AppSettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EditorConfigFiles>
+  </ItemGroup>
+  
+  <Target Name="AppSettings" AfterTargets="AfterBuild">
+    <Copy SourceFiles="Configuration\AppSettings.json" DestinationFolder="$(OutDir)" />
+  </Target>
+  
+  <ItemGroup>
     <ProjectReference Include="..\Philips.Chatbots.Data.Models\Philips.Chatbots.Data.Models.csproj" />
     <ProjectReference Include="..\Philips.Chatbots.Database\Philips.Chatbots.Database.csproj" />
     <ProjectReference Include="..\Philips.Chatbots.ML\Philips.Chatbots.ML.csproj" />
