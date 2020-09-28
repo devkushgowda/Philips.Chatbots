@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using JsonConvert = Newtonsoft.Json.JsonConvert;
@@ -18,11 +19,16 @@ namespace Philips.Chatbots.Desktop.Portal.Configuration
         /// </summary>
         private const string DefaultPassword = "password";
 
+        private const string DefaultDatabase = "Local";
+
         /// <summary>
         /// Base64 password string
         /// </summary>
         public string Password { get; set; } = Convert.ToBase64String(Encoding.UTF8.GetBytes(DefaultPassword));
-        public string MongoDbConnectionString { get; set; }
+
+        public string ActiveDb { get; set; } = DefaultDatabase;
+
+        public Dictionary<string, string> DbConnections { get; set; } = new Dictionary<string, string> { { DefaultDatabase, null } };
 
         /// <summary>
         /// Get password text.
@@ -33,6 +39,14 @@ namespace Philips.Chatbots.Desktop.Portal.Configuration
             return Password == null ? DefaultPassword : Encoding.UTF8.GetString(Convert.FromBase64String(Password));
         }
 
+        /// <summary>
+        /// Gets active connection string
+        /// </summary>
+        /// <returns></returns>
+        public string GetActiveDbConnectionString()
+        {
+            return (ActiveDb != null && (bool)DbConnections?.ContainsKey(ActiveDb)) ? DbConnections[ActiveDb] : DefaultDatabase;
+        }
 
         /// <summary>
         /// Load configuration from file.

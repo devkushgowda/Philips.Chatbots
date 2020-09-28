@@ -74,7 +74,7 @@
             this.textBox17 = new System.Windows.Forms.TextBox();
             this.textBox18 = new System.Windows.Forms.TextBox();
             this.lblProfile = new System.Windows.Forms.Label();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.gbOtherConfigurations = new System.Windows.Forms.GroupBox();
             this.lnkProgressResultAction = new System.Windows.Forms.LinkLabel();
             this.lnkTrainModel = new System.Windows.Forms.LinkLabel();
             this.lnkBotConfigurations = new System.Windows.Forms.LinkLabel();
@@ -82,17 +82,21 @@
             this.lnkNeuralResources = new System.Windows.Forms.LinkLabel();
             this.lnkLabelRefreshTree = new System.Windows.Forms.LinkLabel();
             this.cbxChatProfiles = new System.Windows.Forms.ComboBox();
+            this.cbxDataBases = new System.Windows.Forms.ComboBox();
+            this.lblDatabase = new System.Windows.Forms.Label();
+            this.gbNeuralTree = new System.Windows.Forms.GroupBox();
             this.gbNeuralNodeConfiguration.SuspendLayout();
             this.gbQuickLinks.SuspendLayout();
-            this.groupBox2.SuspendLayout();
+            this.gbOtherConfigurations.SuspendLayout();
+            this.gbNeuralTree.SuspendLayout();
             this.SuspendLayout();
             // 
             // neuralTree
             // 
             this.neuralTree.LineColor = System.Drawing.Color.DarkRed;
-            this.neuralTree.Location = new System.Drawing.Point(12, 43);
+            this.neuralTree.Location = new System.Drawing.Point(11, 114);
             this.neuralTree.Name = "neuralTree";
-            this.neuralTree.Size = new System.Drawing.Size(355, 619);
+            this.neuralTree.Size = new System.Drawing.Size(355, 524);
             this.neuralTree.TabIndex = 1;
             this.neuralTree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.neuralTree_AfterSelect);
             // 
@@ -471,30 +475,30 @@
             // lblProfile
             // 
             this.lblProfile.AutoSize = true;
-            this.lblProfile.Location = new System.Drawing.Point(12, 12);
+            this.lblProfile.Location = new System.Drawing.Point(9, 69);
             this.lblProfile.Name = "lblProfile";
             this.lblProfile.Size = new System.Drawing.Size(98, 20);
             this.lblProfile.TabIndex = 3;
             this.lblProfile.Text = "Active profile";
             // 
-            // groupBox2
+            // gbOtherConfigurations
             // 
-            this.groupBox2.Controls.Add(this.lnkProgressResultAction);
-            this.groupBox2.Controls.Add(this.lnkTrainModel);
-            this.groupBox2.Controls.Add(this.lnkBotConfigurations);
-            this.groupBox2.Controls.Add(this.lnkNeuralActions);
-            this.groupBox2.Controls.Add(this.lnkNeuralResources);
-            this.groupBox2.Location = new System.Drawing.Point(389, 538);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(592, 124);
-            this.groupBox2.TabIndex = 7;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Other actions";
+            this.gbOtherConfigurations.Controls.Add(this.lnkProgressResultAction);
+            this.gbOtherConfigurations.Controls.Add(this.lnkTrainModel);
+            this.gbOtherConfigurations.Controls.Add(this.lnkBotConfigurations);
+            this.gbOtherConfigurations.Controls.Add(this.lnkNeuralActions);
+            this.gbOtherConfigurations.Controls.Add(this.lnkNeuralResources);
+            this.gbOtherConfigurations.Location = new System.Drawing.Point(389, 538);
+            this.gbOtherConfigurations.Name = "gbOtherConfigurations";
+            this.gbOtherConfigurations.Size = new System.Drawing.Size(592, 124);
+            this.gbOtherConfigurations.TabIndex = 7;
+            this.gbOtherConfigurations.TabStop = false;
+            this.gbOtherConfigurations.Text = "Other actions";
             // 
             // lnkProgressResultAction
             // 
             this.lnkProgressResultAction.AutoSize = true;
-            this.lnkProgressResultAction.Location = new System.Drawing.Point(18, 77);
+            this.lnkProgressResultAction.Location = new System.Drawing.Point(18, 79);
             this.lnkProgressResultAction.Name = "lnkProgressResultAction";
             this.lnkProgressResultAction.Size = new System.Drawing.Size(49, 20);
             this.lnkProgressResultAction.TabIndex = 9;
@@ -506,7 +510,7 @@
             // lnkTrainModel
             // 
             this.lnkTrainModel.AutoSize = true;
-            this.lnkTrainModel.Location = new System.Drawing.Point(482, 32);
+            this.lnkTrainModel.Location = new System.Drawing.Point(482, 39);
             this.lnkTrainModel.Name = "lnkTrainModel";
             this.lnkTrainModel.Size = new System.Drawing.Size(88, 20);
             this.lnkTrainModel.TabIndex = 3;
@@ -517,7 +521,7 @@
             // lnkBotConfigurations
             // 
             this.lnkBotConfigurations.AutoSize = true;
-            this.lnkBotConfigurations.Location = new System.Drawing.Point(329, 32);
+            this.lnkBotConfigurations.Location = new System.Drawing.Point(329, 39);
             this.lnkBotConfigurations.Name = "lnkBotConfigurations";
             this.lnkBotConfigurations.Size = new System.Drawing.Size(125, 20);
             this.lnkBotConfigurations.TabIndex = 2;
@@ -528,7 +532,7 @@
             // lnkNeuralActions
             // 
             this.lnkNeuralActions.AutoSize = true;
-            this.lnkNeuralActions.Location = new System.Drawing.Point(183, 32);
+            this.lnkNeuralActions.Location = new System.Drawing.Point(183, 39);
             this.lnkNeuralActions.Name = "lnkNeuralActions";
             this.lnkNeuralActions.Size = new System.Drawing.Size(104, 20);
             this.lnkNeuralActions.TabIndex = 1;
@@ -539,7 +543,7 @@
             // lnkNeuralResources
             // 
             this.lnkNeuralResources.AutoSize = true;
-            this.lnkNeuralResources.Location = new System.Drawing.Point(18, 32);
+            this.lnkNeuralResources.Location = new System.Drawing.Point(18, 39);
             this.lnkNeuralResources.Name = "lnkNeuralResources";
             this.lnkNeuralResources.Size = new System.Drawing.Size(119, 20);
             this.lnkNeuralResources.TabIndex = 0;
@@ -550,7 +554,7 @@
             // lnkLabelRefreshTree
             // 
             this.lnkLabelRefreshTree.AutoSize = true;
-            this.lnkLabelRefreshTree.Location = new System.Drawing.Point(310, 12);
+            this.lnkLabelRefreshTree.Location = new System.Drawing.Point(309, 69);
             this.lnkLabelRefreshTree.Name = "lnkLabelRefreshTree";
             this.lnkLabelRefreshTree.Size = new System.Drawing.Size(58, 20);
             this.lnkLabelRefreshTree.TabIndex = 3;
@@ -563,12 +567,47 @@
             this.cbxChatProfiles.AllowDrop = true;
             this.cbxChatProfiles.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbxChatProfiles.FormattingEnabled = true;
-            this.cbxChatProfiles.Location = new System.Drawing.Point(121, 9);
+            this.cbxChatProfiles.Location = new System.Drawing.Point(119, 66);
             this.cbxChatProfiles.Name = "cbxChatProfiles";
             this.cbxChatProfiles.Size = new System.Drawing.Size(183, 28);
             this.cbxChatProfiles.Sorted = true;
             this.cbxChatProfiles.TabIndex = 7;
             this.cbxChatProfiles.TextChanged += new System.EventHandler(this.cbxChatProfiles_TextChanged);
+            // 
+            // cbxDataBases
+            // 
+            this.cbxDataBases.AllowDrop = true;
+            this.cbxDataBases.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbxDataBases.FormattingEnabled = true;
+            this.cbxDataBases.Location = new System.Drawing.Point(120, 28);
+            this.cbxDataBases.Name = "cbxDataBases";
+            this.cbxDataBases.Size = new System.Drawing.Size(183, 28);
+            this.cbxDataBases.Sorted = true;
+            this.cbxDataBases.TabIndex = 7;
+            this.cbxDataBases.TextChanged += new System.EventHandler(this.cbDataBases_TextChanged);
+            // 
+            // lblDatabase
+            // 
+            this.lblDatabase.AutoSize = true;
+            this.lblDatabase.Location = new System.Drawing.Point(11, 31);
+            this.lblDatabase.Name = "lblDatabase";
+            this.lblDatabase.Size = new System.Drawing.Size(72, 20);
+            this.lblDatabase.TabIndex = 3;
+            this.lblDatabase.Text = "Database";
+            // 
+            // gbNeuralTree
+            // 
+            this.gbNeuralTree.Controls.Add(this.cbxChatProfiles);
+            this.gbNeuralTree.Controls.Add(this.lblDatabase);
+            this.gbNeuralTree.Controls.Add(this.neuralTree);
+            this.gbNeuralTree.Controls.Add(this.cbxDataBases);
+            this.gbNeuralTree.Controls.Add(this.lblProfile);
+            this.gbNeuralTree.Controls.Add(this.lnkLabelRefreshTree);
+            this.gbNeuralTree.Location = new System.Drawing.Point(12, 12);
+            this.gbNeuralTree.Name = "gbNeuralTree";
+            this.gbNeuralTree.Size = new System.Drawing.Size(371, 644);
+            this.gbNeuralTree.TabIndex = 8;
+            this.gbNeuralTree.TabStop = false;
             // 
             // Main
             // 
@@ -577,12 +616,9 @@
             this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.ClientSize = new System.Drawing.Size(995, 674);
-            this.Controls.Add(this.cbxChatProfiles);
-            this.Controls.Add(this.lnkLabelRefreshTree);
-            this.Controls.Add(this.groupBox2);
-            this.Controls.Add(this.lblProfile);
+            this.Controls.Add(this.gbNeuralTree);
+            this.Controls.Add(this.gbOtherConfigurations);
             this.Controls.Add(this.gbNeuralNodeConfiguration);
-            this.Controls.Add(this.neuralTree);
             this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -595,10 +631,11 @@
             this.gbNeuralNodeConfiguration.PerformLayout();
             this.gbQuickLinks.ResumeLayout(false);
             this.gbQuickLinks.PerformLayout();
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
+            this.gbOtherConfigurations.ResumeLayout(false);
+            this.gbOtherConfigurations.PerformLayout();
+            this.gbNeuralTree.ResumeLayout(false);
+            this.gbNeuralTree.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
@@ -647,7 +684,7 @@
         private System.Windows.Forms.LinkLabel lnkNeuralExpression;
         private System.Windows.Forms.LinkLabel lnkTrainData;
         private System.Windows.Forms.GroupBox gbQuickLinks;
-        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.GroupBox gbOtherConfigurations;
         private System.Windows.Forms.LinkLabel lnkBotConfigurations;
         private System.Windows.Forms.LinkLabel lnkNeuralActions;
         private System.Windows.Forms.LinkLabel lnkNeuralResources;
@@ -656,6 +693,9 @@
         private System.Windows.Forms.LinkLabel lnkTrainModel;
         private System.Windows.Forms.LinkLabel lnkProgressResultAction;
         private System.Windows.Forms.LinkLabel lnkLabels;
+        private System.Windows.Forms.ComboBox cbxDataBases;
+        private System.Windows.Forms.Label lblDatabase;
+        private System.Windows.Forms.GroupBox gbNeuralTree;
     }
 }
 

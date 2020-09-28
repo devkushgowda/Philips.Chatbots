@@ -4,6 +4,8 @@ using Philips.Chatbots.Data.Models;
 using Philips.Chatbots.Data.Models.Interfaces;
 using Philips.Chatbots.Data.Models.Neural;
 using Philips.Chatbots.Database.Extension;
+using Philips.Chatbots.Database.MongoDB;
+using Philips.Chatbots.Desktop.Portal.Configuration;
 using Philips.Chatbots.Desktop.Portal.Data;
 using Philips.Chatbots.Desktop.Portal.Forms.Loader;
 using Philips.Chatbots.ML.Models;
@@ -423,9 +425,17 @@ namespace Philips.Chatbots.Desktop.Portal
             }
         }
 
-        private async void Main_Load(object sender, EventArgs e)
+        private void Main_Load(object sender, EventArgs e)
         {
-            await LoadChatProfiles();
+            LoadDatabases();
+        }
+
+        private void LoadDatabases()
+        {
+            var config = Program.AppConfiguration;
+            cbxDataBases.Items.AddRange(config.DbConnections.Select(x => x.Key).ToArray());
+            cbxDataBases.Text = config.ActiveDb;
+
         }
 
         private async void lnkTrainModel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -433,6 +443,7 @@ namespace Philips.Chatbots.Desktop.Portal
             var count = await DbTrainDataCollection.Find(i => true).CountDocumentsAsync();
             if (count > 1)
             {
+                cbxDataBases.Enabled = false;
                 cbxChatProfiles.Enabled = false;
                 lnkProgressResultAction.Visible = true;
                 lnkProgressResultAction.Enabled = false;
@@ -459,6 +470,7 @@ namespace Philips.Chatbots.Desktop.Portal
                 }
                 lnkTrainModel.Enabled = true;
                 cbxChatProfiles.Enabled = true;
+                cbxDataBases.Enabled = true;
             }
         }
 
@@ -534,6 +546,28 @@ namespace Philips.Chatbots.Desktop.Portal
                     await DbLinkCollection.ReplaceOneById(node._id, node);
                     ReloadTree();
                 }
+            }
+        }
+
+        private async void cbDataBases_TextChanged(object sender, EventArgs e)
+        {
+            var config = Program.AppConfiguration;
+            var dataBase = cbxDataBases.Text;
+            if (!string.IsNullOrWhiteSpace(dataBase))
+            {
+                if (config.ActiveDb != dataBase)
+                {
+                    config.ActiveDb = dataBase;
+                    AppSettings.SaveConfiguration(config);
+                }
+                gbOtherConfigurations.Enabled = false;
+                gbNeuralNodeConfiguration.Enabled = false;
+                cbxChatProfiles.Enabled = false;
+                MongoDbProvider.Connect(config.DbConnections[dataBase]);
+                await SyncChatProfile();
+                await LoadChatProfiles();
+                gbOtherConfigurations.Enabled = true;
+                cbxChatProfiles.Enabled = true;
             }
         }
     }

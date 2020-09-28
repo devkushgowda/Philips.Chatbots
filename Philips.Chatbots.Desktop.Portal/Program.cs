@@ -23,7 +23,7 @@ namespace Philips.Chatbots.Desktop.Portal
 
         private static void ConnectToDatabase()
         {
-            MongoDbProvider.Connect(AppConfiguration.MongoDbConnectionString);
+            MongoDbProvider.Connect(AppConfiguration.GetActiveDbConnectionString());
         }
     }
 }
