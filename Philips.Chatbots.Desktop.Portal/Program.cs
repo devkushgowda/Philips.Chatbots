@@ -7,6 +7,7 @@ namespace Philips.Chatbots.Desktop.Portal
 {
     static class Program
     {
+        public readonly static AppSettings AppConfiguration = AppSettings.LoadConfiguration();
         /// <summary>
         ///  The main entry point for the application.
         /// </summary>
@@ -22,8 +23,7 @@ namespace Philips.Chatbots.Desktop.Portal
 
         private static void ConnectToDatabase()
         {
-            var appSetting = AppSettings.LoadConfiguration();
-            MongoDbProvider.Connect(appSetting.MongoDbConnectionString);
+            MongoDbProvider.Connect(AppConfiguration.MongoDbConnectionString);
         }
     }
 }

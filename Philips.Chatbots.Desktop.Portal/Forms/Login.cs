@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 
 namespace Philips.Chatbots.Desktop.Portal
 {
     public partial class Login : Form
     {
+
         public Login()
         {
             InitializeComponent();
@@ -35,7 +31,7 @@ namespace Philips.Chatbots.Desktop.Portal
         {
             if (cbxUsernames.SelectedItem != null)
             {
-                if (pbPassword.Text == "password")
+                if (pbPassword.Text == Program.AppConfiguration.GetPasswordText())
                 {
                     AllowLogin();
                 }
@@ -62,8 +58,8 @@ namespace Philips.Chatbots.Desktop.Portal
         {
             if (e.KeyCode == Keys.Enter)
             {
-                //AttemptLogin();
-                AllowLogin();
+                AttemptLogin();
+                //AllowLogin();
             }
         }
     }

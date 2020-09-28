@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.IO;
+using System.Text;
 using JsonConvert = Newtonsoft.Json.JsonConvert;
 
 namespace Philips.Chatbots.Desktop.Portal.Configuration
@@ -11,7 +12,27 @@ namespace Philips.Chatbots.Desktop.Portal.Configuration
         /// Default configuration file
         /// </summary>
         public const string DefaultConfigurationFile = nameof(AppSettings) + ".json";
+
+        /// <summary>
+        /// Default application password.
+        /// </summary>
+        private const string DefaultPassword = "password";
+
+        /// <summary>
+        /// Base64 password string
+        /// </summary>
+        public string Password { get; set; } = Convert.ToBase64String(Encoding.UTF8.GetBytes(DefaultPassword));
         public string MongoDbConnectionString { get; set; }
+
+        /// <summary>
+        /// Get password text.
+        /// </summary>
+        /// <returns></returns>
+        public string GetPasswordText()
+        {
+            return Password == null ? DefaultPassword : Encoding.UTF8.GetString(Convert.FromBase64String(Password));
+        }
+
 
         /// <summary>
         /// Load configuration from file.
