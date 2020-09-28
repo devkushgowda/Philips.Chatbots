@@ -41,7 +41,7 @@
             this.lblTitle.AutoSize = true;
             this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 19.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.lblTitle.ForeColor = System.Drawing.Color.LightSeaGreen;
-            this.lblTitle.Location = new System.Drawing.Point(24, 25);
+            this.lblTitle.Location = new System.Drawing.Point(24, 33);
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Size = new System.Drawing.Size(88, 45);
             this.lblTitle.TabIndex = 0;
@@ -53,7 +53,7 @@
             this.lblMessage.AutoSize = true;
             this.lblMessage.Font = new System.Drawing.Font("Segoe UI", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.lblMessage.ForeColor = System.Drawing.Color.DimGray;
-            this.lblMessage.Location = new System.Drawing.Point(48, 96);
+            this.lblMessage.Location = new System.Drawing.Point(48, 104);
             this.lblMessage.Name = "lblMessage";
             this.lblMessage.Size = new System.Drawing.Size(105, 31);
             this.lblMessage.TabIndex = 1;
@@ -68,7 +68,7 @@
             this.btnLoad.Font = new System.Drawing.Font("Segoe UI", 25.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.btnLoad.ForeColor = System.Drawing.Color.LightSeaGreen;
             this.btnLoad.Image = ((System.Drawing.Image)(resources.GetObject("btnLoad.Image")));
-            this.btnLoad.Location = new System.Drawing.Point(140, 155);
+            this.btnLoad.Location = new System.Drawing.Point(140, 163);
             this.btnLoad.Name = "btnLoad";
             this.btnLoad.Size = new System.Drawing.Size(208, 210);
             this.btnLoad.TabIndex = 2;
@@ -83,7 +83,7 @@
             this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnCancel.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.btnCancel.ForeColor = System.Drawing.Color.LightSeaGreen;
-            this.btnCancel.Location = new System.Drawing.Point(48, 398);
+            this.btnCancel.Location = new System.Drawing.Point(48, 406);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(195, 65);
             this.btnCancel.TabIndex = 2;
@@ -98,7 +98,7 @@
             this.btnBackground.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnBackground.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.btnBackground.ForeColor = System.Drawing.Color.LightSeaGreen;
-            this.btnBackground.Location = new System.Drawing.Point(254, 398);
+            this.btnBackground.Location = new System.Drawing.Point(254, 406);
             this.btnBackground.Name = "btnBackground";
             this.btnBackground.Size = new System.Drawing.Size(195, 65);
             this.btnBackground.TabIndex = 2;
@@ -118,7 +118,7 @@
             this.Controls.Add(this.btnLoad);
             this.Controls.Add(this.lblMessage);
             this.Controls.Add(this.lblTitle);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.ImeMode = System.Windows.Forms.ImeMode.On;
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.MaximizeBox = false;

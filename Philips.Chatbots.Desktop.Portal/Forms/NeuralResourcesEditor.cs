@@ -160,8 +160,6 @@ namespace Philips.Chatbots.Desktop.Portal
             chkBxIsLocal.Checked = false;
             lnkLabels.Enabled = true;
             lnkLabels.Text = $"Edit labels";
-            btnApply.Enabled = false;
-
         }
 
         private void treeViewNeuralresources_AfterSelect(object sender, TreeViewEventArgs e)

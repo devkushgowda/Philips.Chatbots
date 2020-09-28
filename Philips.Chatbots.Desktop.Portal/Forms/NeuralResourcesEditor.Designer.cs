@@ -152,7 +152,7 @@
             this.btnApply.Name = "btnApply";
             this.btnApply.Size = new System.Drawing.Size(94, 29);
             this.btnApply.TabIndex = 0;
-            this.btnApply.Text = "Apply";
+            this.btnApply.Text = "Update";
             this.btnApply.UseVisualStyleBackColor = true;
             this.btnApply.Click += new System.EventHandler(this.btnApply_Click);
             // 

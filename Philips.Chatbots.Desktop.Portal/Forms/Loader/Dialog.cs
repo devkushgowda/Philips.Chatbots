@@ -1,7 +1,6 @@
 ﻿using Philips.Chatbots.Desktop.Portal.Forms.Loader;
 using System;
 using System.Drawing;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Timer = System.Windows.Forms.Timer;
@@ -17,9 +16,10 @@ namespace Philips.Chatbots.Desktop.Portal
         private int curTick = 0;
         private string titleText;
 
-        public Dialog(string title, string message, string buttonText,string hideButtonText, Action action, FormLocation ownerLocation = null)
+        public Dialog(string title, string message, string buttonText, string hideButtonText, Action action, FormLocation ownerLocation = null)
         {
             InitializeComponent();
+            this.Text = "";
             this.ownerLocation = ownerLocation;
             lblTitle.Text = titleText = title;
             lblMessage.Text = message;
