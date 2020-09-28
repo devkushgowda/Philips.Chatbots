@@ -35,6 +35,8 @@
             this.tbQuestionTitle = new System.Windows.Forms.TextBox();
             this.tbHint = new System.Windows.Forms.TextBox();
             this.gbExpression = new System.Windows.Forms.GroupBox();
+            this.cbxDataType = new System.Windows.Forms.ComboBox();
+            this.lblDataType = new System.Windows.Forms.Label();
             this.cbxFallbackActionNode = new System.Windows.Forms.ComboBox();
             this.cbxForwardActionNode = new System.Windows.Forms.ComboBox();
             this.dataGridViewActionItems = new System.Windows.Forms.DataGridView();
@@ -43,8 +45,6 @@
             this.lblFallbackAction = new System.Windows.Forms.Label();
             this.lblForwardAction = new System.Windows.Forms.Label();
             this.chkBxSkipEval = new System.Windows.Forms.CheckBox();
-            this.lblDataType = new System.Windows.Forms.Label();
-            this.cbxDataType = new System.Windows.Forms.ComboBox();
             this.gbExpression.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewActionItems)).BeginInit();
             this.SuspendLayout();
@@ -109,6 +109,24 @@
             this.gbExpression.TabIndex = 6;
             this.gbExpression.TabStop = false;
             this.gbExpression.Text = "Expression";
+            // 
+            // cbxDataType
+            // 
+            this.cbxDataType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbxDataType.FormattingEnabled = true;
+            this.cbxDataType.Location = new System.Drawing.Point(137, 31);
+            this.cbxDataType.Name = "cbxDataType";
+            this.cbxDataType.Size = new System.Drawing.Size(151, 28);
+            this.cbxDataType.TabIndex = 13;
+            // 
+            // lblDataType
+            // 
+            this.lblDataType.AutoSize = true;
+            this.lblDataType.Location = new System.Drawing.Point(23, 34);
+            this.lblDataType.Name = "lblDataType";
+            this.lblDataType.Size = new System.Drawing.Size(74, 20);
+            this.lblDataType.TabIndex = 12;
+            this.lblDataType.Text = "Data type";
             // 
             // cbxFallbackActionNode
             // 
@@ -187,24 +205,6 @@
             this.chkBxSkipEval.TabIndex = 6;
             this.chkBxSkipEval.Text = "Skip evaluation";
             this.chkBxSkipEval.UseVisualStyleBackColor = true;
-            // 
-            // lblDataType
-            // 
-            this.lblDataType.AutoSize = true;
-            this.lblDataType.Location = new System.Drawing.Point(23, 34);
-            this.lblDataType.Name = "lblDataType";
-            this.lblDataType.Size = new System.Drawing.Size(74, 20);
-            this.lblDataType.TabIndex = 12;
-            this.lblDataType.Text = "Data type";
-            // 
-            // cbxDataType
-            // 
-            this.cbxDataType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbxDataType.FormattingEnabled = true;
-            this.cbxDataType.Location = new System.Drawing.Point(137, 31);
-            this.cbxDataType.Name = "cbxDataType";
-            this.cbxDataType.Size = new System.Drawing.Size(151, 28);
-            this.cbxDataType.TabIndex = 13;
             // 
             // DecisionExpressionEditor
             // 
