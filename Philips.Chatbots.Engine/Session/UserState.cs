@@ -1,4 +1,5 @@
 ﻿using Microsoft.Bot.Builder;
+using Microsoft.Bot.Schema;
 using Microsoft.Extensions.ML;
 using Philips.Chatbots.Data.Models;
 using Philips.Chatbots.Data.Models.Neural;
@@ -100,6 +101,12 @@ namespace Philips.Chatbots.Engine.Session
 
         public async Task<int> HandleRequest(ITurnContext turnContext)
         {
+            //First send back typing response and then process the request
+            var typingReply = turnContext.Activity.CreateReply(); 
+            typingReply.Type = ActivityTypes.Typing;
+            await turnContext.SendActivityAsync(typingReply);
+            //await Task.Delay(1000);
+
             var res = await RequestPipeline.Execute(turnContext, this);
             switch (res.Result)
             {

@@ -10,6 +10,8 @@ using Philips.Chatbots.Session;
 using Philips.Chatbots.Engine.Request.Extensions;
 using Philips.Chatbots.Data.Models;
 using static Philips.Chatbots.Database.Common.DbAlias;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Philips.Chatbots.Engine.Requst.Handlers
 {
@@ -179,9 +181,12 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                                 {
                                     var action = await DbActionCollection.FindOneById(actionResult.LinkId);
 
-                                    (await action.BuildActionRespose(turnContext)).ForEach(item => turnContext.SendActivityAsync(item));
+                                    await turnContext.SendActivityAsync(action.BuildActionRespose(turnContext));
 
-                                    await SendReply(turnContext, StringsProvider.TryGet(BotResourceKeyConstants.Feedback), SuggestionExtension.GetFeedbackSuggestionActions());
+                                    await Task.Delay(1000).ContinueWith(async ct =>
+                                    {
+                                        await SendReply(turnContext, StringsProvider.TryGet(BotResourceKeyConstants.Feedback), SuggestionExtension.GetFeedbackSuggestionActions());
+                                    });
 
                                     requestState.CurrentState = ChatStateType.RecordFeedback;
                                 }
@@ -229,13 +234,33 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                 {
                     await EvaluateExpressionInput(turnContext, requestState);//Default expression
                 }
-                else if (curLink.NeuralExp.Hint != null && curLink.NeuralExp.Hint.Contains(":"))
+                else
                 {
                     foreach (var note in curLink.Notes)
                         await turnContext.SendActivityAsync(curLink.ApplyFormat(note));
 
                     var title = curLink.NeuralExp.QuestionTitle;
-                    await SendReply(turnContext, curLink.ApplyFormat(title), curLink.GetHintSuggestionActions());
+                    SuggestedActions suggestedActions = null;
+
+                    if (curLink.NeuralExp.Hint != null && curLink.NeuralExp.Hint.Contains(":"))
+                        suggestedActions = curLink.GetHintSuggestionActions();
+
+                    if (curLink.NeuralExp is LinkExpression)
+                    {
+                        var card = new HeroCard
+                        {
+                            Text = title,
+                            Buttons = (curLink.NeuralExp as LinkExpression).ActionItems.Select(action => new CardAction(ActionTypes.PostBack, title: action.Title, value: action.Value)).ToList()
+                        };
+                        var reply = MessageFactory.Attachment(card.ToAttachment());
+                        reply.SuggestedActions = suggestedActions;
+                        await turnContext.SendActivityAsync(reply);
+                    }
+                    else
+                    {
+                        await SendReply(turnContext, curLink.ApplyFormat(title), suggestedActions);
+                    }
+
                     requestState.CurrentState = ChatStateType.ExpInput;
                 }
                 res = true;

@@ -9,6 +9,7 @@ using Philips.Chatbots.Engine.Requst.Handlers;
 using Philips.Chatbots.Session;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using static Philips.Chatbots.Database.Common.DbAlias;
 
@@ -21,45 +22,6 @@ namespace Philips.Chatbots.Engine.Request.Extensions
     public static class AlphaActivitiesExtension
     {
         public static readonly ILog logger = LogHelper.GetLogger<AlphaRequestHandler>();
-        /// <summary>
-        /// Handles resuest flow for neural resource nodes.
-        /// </summary>
-        /// <param name="resource"></param>
-        /// <param name="turnContext"></param>
-        /// <param name="requestState"></param>
-        /// <returns></returns>
-        public static Attachment BuildResourceAttachment(this NeuralResourceModel resourceModel)
-        {
-            Attachment res = null;
-
-            switch (resourceModel.Type)
-            {
-                case ResourceType.DocumentPDF:
-                case ResourceType.Text:
-                case ResourceType.ImagePNG:
-                case ResourceType.ImageJPG:
-                case ResourceType.ImageGIF:
-                case ResourceType.WebsiteUrl:
-                case ResourceType.Audio:
-                case ResourceType.Script:
-                case ResourceType.Json:
-                    {
-                        res = new Attachment();
-                        res.ContentType = resourceModel.GetAttachmentType();
-                        res.ContentUrl = resourceModel.Location;
-                    }
-                    break;
-                case ResourceType.Video:
-                    {
-                        res = new VideoCard(media: new[] { new MediaUrl(resourceModel.Location) }).ToAttachment();
-                    }
-                    break;
-                default:
-                    break;
-            }
-
-            return res;
-        }
 
         /// <summary>
         /// Handles resuest flow for action resource nodes.
@@ -68,23 +30,62 @@ namespace Philips.Chatbots.Engine.Request.Extensions
         /// <param name="turnContext"></param>
         /// <param name="requestState"></param>
         /// <returns></returns>
-        public static async Task<List<Activity>> BuildActionRespose(this NeuralActionModel actionModel, ITurnContext turnContext)
+        public static Activity BuildActionRespose(this NeuralActionModel actionModel, ITurnContext turnContext)
         {
-            List<Activity> activity = new List<Activity>() { turnContext.Activity.CreateReply(actionModel.ApplyFormat(actionModel.Title)) };
-            foreach (var resId in actionModel.Resources)
+            Activity activity = turnContext.Activity.CreateReply(actionModel.ApplyFormat(actionModel.Title));
+            List<NeuralResourceModel> resources = actionModel.Resources.Select(async resId => await DbResourceCollection.FindOneById(resId)).Select(task => task.Result).ToList();
+
+            activity.Attachments = resources.Select(res =>
             {
-                try
+                Attachment attachment = null;
+                switch (res.Type)
                 {
-                    var res = await DbResourceCollection.FindOneById(resId);
-                    var act = turnContext.Activity.CreateReply(res.ApplyFormat(res.Title));
-                    act.Attachments = new List<Attachment>() { res.BuildResourceAttachment() };
-                    activity.Add(act);
+                    case ResourceType.ImagePNG:
+                    case ResourceType.ImageJPG:
+                    case ResourceType.ImageGIF:
+                        {
+                            attachment = new HeroCard
+                            {
+                                Title = res.Title,
+                                Images = new List<CardImage> { new CardImage { Url = res.Location } }
+                            }.ToAttachment();
+                        }
+                        break;
+                    case ResourceType.Audio:
+                        {
+                            var audioCard = new AudioCard(media: new[] { new MediaUrl(res.Location) });
+                            audioCard.Title = res.Title;
+                            attachment = audioCard.ToAttachment();
+                        }
+                        break;
+                    case ResourceType.Script:
+                    case ResourceType.DocumentPDF:
+                    case ResourceType.Text:
+                    case ResourceType.WebsiteUrl:
+                    case ResourceType.Json:
+                        {
+                            attachment = new HeroCard
+                            {
+                                Title = res.Title,
+                                Buttons = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, title: $"Open {Enum.GetName(res.Type.GetType(), res.Type)}", value: res.Location) }
+                            }.ToAttachment();
+                        }
+                        break;
+                    case ResourceType.Video:
+                        {
+                            var videoCard = new VideoCard(media: new[] { new MediaUrl(res.Location) });
+                            videoCard.Title = res.Title;
+                            attachment = videoCard.ToAttachment();
+                        }
+                        break;
+                    default:
+                        break;
                 }
-                catch (Exception e)
-                {
-                    logger.Error(e);
-                }
-            }
+
+                return attachment;
+
+            }).ToList();
+
             return activity;
         }
 
