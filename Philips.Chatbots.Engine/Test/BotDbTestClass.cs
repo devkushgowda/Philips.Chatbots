@@ -5,10 +5,6 @@ using Philips.Chatbots.Database.Extension;
 using Philips.Chatbots.Database.MongoDB;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Philips.Chatbots.ML.Models;
-using System.Linq;
-using Philips.Chatbots.ML.Interfaces;
-using Microsoft.Extensions.ML;
 using static Philips.Chatbots.Database.Common.DbAlias;
 
 namespace Philips.Chatbots.Engine.Test
@@ -18,26 +14,25 @@ namespace Philips.Chatbots.Engine.Test
     /// </summary>
     public static class BotDbTestClass
     {
-        private static bool initilized = false;
-        public async static Task Feed(string botId, Microsoft.Extensions.ML.PredictionEnginePool<NeuralTrainInput, PredictionOutput> predictionEnginePool)
+        /// <summary>
+        /// Call this to create and feed test database
+        /// </summary>
+        /// <param name="botId"></param>
+        /// <param name="dropDatabase"></param>
+        /// <param name="profileName"></param>
+        /// <returns></returns>
+        public async static Task Feed(string botId, bool dropDatabase, string profileName = BotChatProfile.DefaultProfile)
         {
-            if (initilized)
-                return;
-            //string myProfile = "Test";
-            await MongoDbProvider.DropDatabase();
-            //await DbBotCollection.InsertNew(new BotModel { _id = BotAlphaName, Configuration = new BotConfiguration { ActiveProfile = myProfile, ChatProfiles = new List<BotChatProfile> { new BotChatProfile { Name = myProfile } } } });
-            await DbBotCollection.SetRootNodeById(BotAlphaName, "");
-            await SyncChatProfile();
-
-            //  SyncChatProfile();
-
-            var botConfiguration = await DbBotCollection.InsertNewOrUpdate(new BotModel
+            if (dropDatabase)
             {
-                _id = botId,
-                Description = "Simple bot",
-                EndPoint = "https://localhost:44388/api/messages",
-                Configuration = new BotConfiguration { }
-            });
+                await MongoDbProvider.DropDatabase();
+                await DbBotCollection.InsertNewOrUpdate(new BotModel { _id = BotAlphaName, Configuration = new BotConfiguration { ActiveProfile = profileName, ChatProfiles = new List<BotChatProfile> {  } } });
+            }
+
+            await DbBotCollection.AddOrUpdateChatProfileById(BotAlphaName, new BotChatProfile { Name = profileName });
+            await DbBotCollection.SetActiveChatProfileById(BotAlphaName, profileName);
+
+            await SyncChatProfile();
 
 
             var superRootNode = await DbLinkCollection.InsertNew(new NeuralLinkModel
@@ -54,7 +49,7 @@ namespace Philips.Chatbots.Engine.Test
 
 
             //configure it as bot root node
-            await DbBotCollection.SetRootNodeById(botId, superRootNode._id);
+            await DbBotCollection.SetRootNodeById(botId, superRootNode._id, profileName);
 
 
 
@@ -252,13 +247,7 @@ namespace Philips.Chatbots.Engine.Test
 
             await DbTrainDataCollection.InsertNew(displayTrainModel);
 
-            //Build and tran the model
-            new NeuralTrainingEngine().BuildAndSaveModel();
-
-            List<string> mlTestData = new List<string> { "my mobile screen is broken", "my speaker is not working", "broken screen" };
-            var output = mlTestData.Select(item => DbLinkCollection.FindOneById(predictionEnginePool.Predict(nameof(NeuralPredictionEngine), new NeuralTrainInput { Text = item })._id).Result.Name).ToList();
             #endregion
-            initilized = true;
         }
     }
 }

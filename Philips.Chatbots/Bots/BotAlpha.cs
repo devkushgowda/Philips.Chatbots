@@ -42,7 +42,8 @@ namespace Philips.Chatbots.Bots
         public async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default(CancellationToken))
         {
             //new NeuralTrainingEngine().BuildAndSaveModel();
-            //await BotDbTestClass.Feed(BotAlpha.Id, predictionEnginePool); //Recreates DB in first request, Comment if you want to retain old data.
+            //await BotDbTestClass.Feed(BotAlpha.Id, true); //Recreates DB in first request, Comment if you want to retain old data.
+            //await BotDbTestClass.Feed(BotAlpha.Id, false, "Mobile"); //Recreates DB in first request, Comment if you want to retain old data.
             var requestState = await turnContext.GetOrCreateUserState(BotAlpha.Id, predictionEnginePool);
             await requestState.HandleRequest(turnContext);
         }
