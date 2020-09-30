@@ -461,5 +461,19 @@ namespace Philips.Chatbots.Desktop.Portal
                 ((BindingSource)cbxFallbackActionNode.DataSource).DataSource = await ((LinkType)(item.Value)).GetAllLinks();
             }
         }
+
+        private void lnkSuggestionsEditor_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            var hintList = tbHint.Text?.Split(',')?.Where(item => item.Contains(":"))?.Select(item =>
+            {
+                var parts = item.Split(':');
+                return new KeyValuePair<string, string>(parts[0], parts[1]);
+            }).ToList();
+            var res = new KeyValueEditor("Hint formatter", hintList).ShowDialog();
+            if (res == DialogResult.OK)
+            {
+                hintList.ForEach(item => tbHint.Text += $"{item.Key}:{item.Value},");
+            }
+        }
     }
 }

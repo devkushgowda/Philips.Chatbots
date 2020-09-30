@@ -31,11 +31,12 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LinkExpressionEditor));
             this.btnSave = new System.Windows.Forms.Button();
             this.lblQuestionTitle = new System.Windows.Forms.Label();
-            this.lblHint = new System.Windows.Forms.Label();
-            this.tbHint = new System.Windows.Forms.TextBox();
+            this.lblSuggestions = new System.Windows.Forms.Label();
+            this.tbSuggestions = new System.Windows.Forms.TextBox();
             this.tbQuestionTitle = new System.Windows.Forms.TextBox();
             this.chkBxSkipEval = new System.Windows.Forms.CheckBox();
             this.dataGridViewOptions = new System.Windows.Forms.DataGridView();
+            this.lnkHintEditor = new System.Windows.Forms.LinkLabel();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewOptions)).BeginInit();
             this.SuspendLayout();
             // 
@@ -58,21 +59,21 @@
             this.lblQuestionTitle.TabIndex = 1;
             this.lblQuestionTitle.Text = "Question title";
             // 
-            // lblHint
+            // lblSuggestions
             // 
-            this.lblHint.AutoSize = true;
-            this.lblHint.Location = new System.Drawing.Point(33, 65);
-            this.lblHint.Name = "lblHint";
-            this.lblHint.Size = new System.Drawing.Size(37, 20);
-            this.lblHint.TabIndex = 2;
-            this.lblHint.Text = "Hint";
+            this.lblSuggestions.AutoSize = true;
+            this.lblSuggestions.Location = new System.Drawing.Point(33, 65);
+            this.lblSuggestions.Name = "lblSuggestions";
+            this.lblSuggestions.Size = new System.Drawing.Size(89, 20);
+            this.lblSuggestions.TabIndex = 2;
+            this.lblSuggestions.Text = "Suggestions";
             // 
-            // tbHint
+            // tbSuggestions
             // 
-            this.tbHint.Location = new System.Drawing.Point(166, 62);
-            this.tbHint.Name = "tbHint";
-            this.tbHint.Size = new System.Drawing.Size(494, 27);
-            this.tbHint.TabIndex = 4;
+            this.tbSuggestions.Location = new System.Drawing.Point(166, 62);
+            this.tbSuggestions.Name = "tbSuggestions";
+            this.tbSuggestions.Size = new System.Drawing.Size(402, 27);
+            this.tbSuggestions.TabIndex = 4;
             // 
             // tbQuestionTitle
             // 
@@ -103,16 +104,28 @@
             this.dataGridViewOptions.RowsAdded += new System.Windows.Forms.DataGridViewRowsAddedEventHandler(this.dataGridViewOptions_RowsAdded);
             this.dataGridViewOptions.KeyDown += new System.Windows.Forms.KeyEventHandler(this.dataGridViewOptions_KeyDown);
             // 
+            // lnkHintEditor
+            // 
+            this.lnkHintEditor.AutoSize = true;
+            this.lnkHintEditor.Location = new System.Drawing.Point(574, 65);
+            this.lnkHintEditor.Name = "lnkHintEditor";
+            this.lnkHintEditor.Size = new System.Drawing.Size(77, 20);
+            this.lnkHintEditor.TabIndex = 8;
+            this.lnkHintEditor.TabStop = true;
+            this.lnkHintEditor.Text = "Use editor";
+            this.lnkHintEditor.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkSuggestionsEditor_LinkClicked);
+            // 
             // LinkExpressionEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(701, 405);
+            this.Controls.Add(this.lnkHintEditor);
             this.Controls.Add(this.dataGridViewOptions);
             this.Controls.Add(this.chkBxSkipEval);
             this.Controls.Add(this.tbQuestionTitle);
-            this.Controls.Add(this.tbHint);
-            this.Controls.Add(this.lblHint);
+            this.Controls.Add(this.tbSuggestions);
+            this.Controls.Add(this.lblSuggestions);
             this.Controls.Add(this.lblQuestionTitle);
             this.Controls.Add(this.btnSave);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -132,10 +145,11 @@
 
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.Label lblQuestionTitle;
-        private System.Windows.Forms.Label lblHint;
-        private System.Windows.Forms.TextBox tbHint;
+        private System.Windows.Forms.Label lblSuggestions;
+        private System.Windows.Forms.TextBox tbSuggestions;
         private System.Windows.Forms.TextBox tbQuestionTitle;
         private System.Windows.Forms.CheckBox chkBxSkipEval;
         private System.Windows.Forms.DataGridView dataGridViewOptions;
+        private System.Windows.Forms.LinkLabel lnkHintEditor;
     }
 }

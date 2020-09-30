@@ -29,7 +29,7 @@ namespace Philips.Chatbots.Desktop.Portal
         private void LoadData()
         {
             tbQuestionTitle.Text = expression.QuestionTitle;
-            tbHint.Text = expression.Hint;
+            tbSuggestions.Text = expression.Hint;
             chkBxSkipEval.Checked = expression.SkipEvaluation;
 
             DataGridViewTextBoxColumn dvTbTitle = new DataGridViewTextBoxColumn();
@@ -102,7 +102,7 @@ namespace Philips.Chatbots.Desktop.Portal
         private void btnSave_Click(object sender, EventArgs e)
         {
             expression.QuestionTitle = tbQuestionTitle.Text;
-            expression.Hint = tbHint.Text;
+            expression.Hint = tbSuggestions.Text;
             expression.SkipEvaluation = chkBxSkipEval.Checked;
             expression.Options = new List<ActionOption>();
             foreach (DataGridViewRow row in dataGridViewOptions.Rows)
@@ -231,6 +231,20 @@ namespace Philips.Chatbots.Desktop.Portal
                     default:
                         break;
                 }
+            }
+        }
+
+        private void lnkSuggestionsEditor_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            var hintList = tbSuggestions.Text?.Split(',')?.Where(item => item.Contains(":"))?.Select(item =>
+             {
+                 var parts = item.Split(':');
+                 return new KeyValuePair<string, string>(parts[0], parts[1]);
+             }).ToList();
+            var res = new KeyValueEditor("Hint formatter", hintList).ShowDialog();
+            if (res == DialogResult.OK)
+            {
+                hintList.ForEach(item => tbSuggestions.Text += $"{item.Key}:{item.Value},");
             }
         }
     }
