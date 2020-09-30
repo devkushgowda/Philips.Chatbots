@@ -472,6 +472,7 @@ namespace Philips.Chatbots.Desktop.Portal
             var res = new KeyValueEditor("Suggestions formatter", suggestionsList).ShowDialog();
             if (res == DialogResult.OK)
             {
+                tbSuggestions.Text = "";
                 suggestionsList.ForEach(item => tbSuggestions.Text += $"{item.Key}:{item.Value},");
             }
         }
