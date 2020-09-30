@@ -236,15 +236,15 @@ namespace Philips.Chatbots.Desktop.Portal
 
         private void lnkSuggestionsEditor_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            var hintList = tbSuggestions.Text?.Split(',')?.Where(item => item.Contains(":"))?.Select(item =>
+            var suggestionsList = tbSuggestions.Text?.Split(',')?.Where(item => item.Contains(":"))?.Select(item =>
              {
                  var parts = item.Split(':');
                  return new KeyValuePair<string, string>(parts[0], parts[1]);
              }).ToList();
-            var res = new KeyValueEditor("Hint formatter", hintList).ShowDialog();
+            var res = new KeyValueEditor("Suggestions formatter", suggestionsList).ShowDialog();
             if (res == DialogResult.OK)
             {
-                hintList.ForEach(item => tbSuggestions.Text += $"{item.Key}:{item.Value},");
+                suggestionsList.ForEach(item => tbSuggestions.Text += $"{item.Key}:{item.Value},");
             }
         }
     }

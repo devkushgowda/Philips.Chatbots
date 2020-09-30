@@ -33,7 +33,7 @@
             this.lblQuestionTitle = new System.Windows.Forms.Label();
             this.lblSuggestions = new System.Windows.Forms.Label();
             this.tbQuestionTitle = new System.Windows.Forms.TextBox();
-            this.tbHint = new System.Windows.Forms.TextBox();
+            this.tbSuggestions = new System.Windows.Forms.TextBox();
             this.gbExpression = new System.Windows.Forms.GroupBox();
             this.cbxDataType = new System.Windows.Forms.ComboBox();
             this.lblDataType = new System.Windows.Forms.Label();
@@ -85,12 +85,12 @@
             this.tbQuestionTitle.Size = new System.Drawing.Size(593, 27);
             this.tbQuestionTitle.TabIndex = 5;
             // 
-            // tbHint
+            // tbSuggestions
             // 
-            this.tbHint.Location = new System.Drawing.Point(123, 64);
-            this.tbHint.Name = "tbHint";
-            this.tbHint.Size = new System.Drawing.Size(483, 27);
-            this.tbHint.TabIndex = 4;
+            this.tbSuggestions.Location = new System.Drawing.Point(123, 64);
+            this.tbSuggestions.Name = "tbSuggestions";
+            this.tbSuggestions.Size = new System.Drawing.Size(483, 27);
+            this.tbSuggestions.TabIndex = 4;
             // 
             // gbExpression
             // 
@@ -225,7 +225,7 @@
             this.ClientSize = new System.Drawing.Size(731, 511);
             this.Controls.Add(this.lnkHintEditor);
             this.Controls.Add(this.gbExpression);
-            this.Controls.Add(this.tbHint);
+            this.Controls.Add(this.tbSuggestions);
             this.Controls.Add(this.tbQuestionTitle);
             this.Controls.Add(this.lblSuggestions);
             this.Controls.Add(this.lblQuestionTitle);
@@ -251,7 +251,7 @@
         private System.Windows.Forms.Label lblQuestionTitle;
         private System.Windows.Forms.Label lblSuggestions;
         private System.Windows.Forms.TextBox tbQuestionTitle;
-        private System.Windows.Forms.TextBox tbHint;
+        private System.Windows.Forms.TextBox tbSuggestions;
         private System.Windows.Forms.GroupBox gbExpression;
         private System.Windows.Forms.DataGridView dataGridViewActionItems;
         private System.Windows.Forms.ComboBox cbxForwardActionType;

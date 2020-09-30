@@ -161,7 +161,7 @@ namespace Philips.Chatbots.Desktop.Portal
                 cbxDataType.SelectedValue = datatype;
 
             tbQuestionTitle.Text = expression.QuestionTitle;
-            tbHint.Text = expression.Hint;
+            tbSuggestions.Text = expression.Hint;
             chkBxSkipEval.Checked = expression.SkipEvaluation;
 
             if (expression?.ForwardAction != null)
@@ -297,7 +297,7 @@ namespace Philips.Chatbots.Desktop.Portal
         {
             this.DialogResult = DialogResult.OK;
             expression.QuestionTitle = tbQuestionTitle.Text;
-            expression.Hint = tbHint.Text;
+            expression.Hint = tbSuggestions.Text;
             expression.SkipEvaluation = chkBxSkipEval.Checked;
 
             expression.FallbackAction = null;
@@ -464,15 +464,15 @@ namespace Philips.Chatbots.Desktop.Portal
 
         private void lnkSuggestionsEditor_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            var hintList = tbHint.Text?.Split(',')?.Where(item => item.Contains(":"))?.Select(item =>
+            var suggestionsList = tbSuggestions.Text?.Split(',')?.Where(item => item.Contains(":"))?.Select(item =>
             {
                 var parts = item.Split(':');
                 return new KeyValuePair<string, string>(parts[0], parts[1]);
             }).ToList();
-            var res = new KeyValueEditor("Hint formatter", hintList).ShowDialog();
+            var res = new KeyValueEditor("Suggestions formatter", suggestionsList).ShowDialog();
             if (res == DialogResult.OK)
             {
-                hintList.ForEach(item => tbHint.Text += $"{item.Key}:{item.Value},");
+                suggestionsList.ForEach(item => tbSuggestions.Text += $"{item.Key}:{item.Value},");
             }
         }
     }
