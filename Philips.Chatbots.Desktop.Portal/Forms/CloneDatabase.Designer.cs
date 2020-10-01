@@ -35,6 +35,8 @@
             this.cbxToDb = new System.Windows.Forms.ComboBox();
             this.btnClone = new System.Windows.Forms.Button();
             this.chkbDrop = new System.Windows.Forms.CheckBox();
+            this.cbxChatProfile = new System.Windows.Forms.ComboBox();
+            this.chkbSelectProfile = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // lblSource
@@ -54,6 +56,7 @@
             this.cbxFromDb.Name = "cbxFromDb";
             this.cbxFromDb.Size = new System.Drawing.Size(364, 28);
             this.cbxFromDb.TabIndex = 1;
+            this.cbxFromDb.SelectedIndexChanged += new System.EventHandler(this.cbxFromDb_SelectedIndexChanged);
             // 
             // lblDestination
             // 
@@ -75,7 +78,7 @@
             // 
             // btnClone
             // 
-            this.btnClone.Location = new System.Drawing.Point(302, 220);
+            this.btnClone.Location = new System.Drawing.Point(320, 279);
             this.btnClone.Name = "btnClone";
             this.btnClone.Size = new System.Drawing.Size(92, 29);
             this.btnClone.TabIndex = 4;
@@ -88,18 +91,41 @@
             this.chkbDrop.AutoSize = true;
             this.chkbDrop.Checked = true;
             this.chkbDrop.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkbDrop.Location = new System.Drawing.Point(48, 180);
+            this.chkbDrop.Location = new System.Drawing.Point(48, 238);
             this.chkbDrop.Name = "chkbDrop";
             this.chkbDrop.Size = new System.Drawing.Size(208, 24);
             this.chkbDrop.TabIndex = 5;
             this.chkbDrop.Text = "Drop destination database";
             this.chkbDrop.UseVisualStyleBackColor = true;
             // 
+            // cbxChatProfile
+            // 
+            this.cbxChatProfile.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbxChatProfile.Enabled = false;
+            this.cbxChatProfile.FormattingEnabled = true;
+            this.cbxChatProfile.Location = new System.Drawing.Point(230, 186);
+            this.cbxChatProfile.Name = "cbxChatProfile";
+            this.cbxChatProfile.Size = new System.Drawing.Size(182, 28);
+            this.cbxChatProfile.TabIndex = 3;
+            // 
+            // chkbSelectProfile
+            // 
+            this.chkbSelectProfile.AutoSize = true;
+            this.chkbSelectProfile.Location = new System.Drawing.Point(48, 188);
+            this.chkbSelectProfile.Name = "chkbSelectProfile";
+            this.chkbSelectProfile.Size = new System.Drawing.Size(176, 24);
+            this.chkbSelectProfile.TabIndex = 5;
+            this.chkbSelectProfile.Text = "Clone selected profile";
+            this.chkbSelectProfile.UseVisualStyleBackColor = true;
+            this.chkbSelectProfile.CheckedChanged += new System.EventHandler(this.chkbSelectProfile_CheckedChanged);
+            // 
             // CloneDatabase
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(459, 285);
+            this.ClientSize = new System.Drawing.Size(469, 333);
+            this.Controls.Add(this.chkbSelectProfile);
+            this.Controls.Add(this.cbxChatProfile);
             this.Controls.Add(this.chkbDrop);
             this.Controls.Add(this.btnClone);
             this.Controls.Add(this.cbxToDb);
@@ -127,5 +153,7 @@
         private System.Windows.Forms.ComboBox cbxToDb;
         private System.Windows.Forms.Button btnClone;
         private System.Windows.Forms.CheckBox chkbDrop;
+        private System.Windows.Forms.ComboBox cbxChatProfile;
+        private System.Windows.Forms.CheckBox chkbSelectProfile;
     }
 }

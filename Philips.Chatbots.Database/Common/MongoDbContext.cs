@@ -68,6 +68,30 @@ namespace Philips.Chatbots.Database.Common
         }
 
         /// <summary>
+        /// Drop all data collections
+        /// </summary>
+        /// <param name="dbName"></param>
+        /// <returns></returns>
+        public async Task DropAllNodeCollections(string dbName = DatabaseConstants.DefaultDatabaseName)
+        {
+            IMongoDatabase db;
+
+            if (_client == null)
+            {
+                db = MongoDbProvider.GetDatabase(dbName);
+            }
+            else
+            {
+                db = _client.GetDatabase(dbName);
+            }
+            await db.DropCollectionAsync(_linkCollectionName);
+            await db.DropCollectionAsync(_actionCollectionName);
+            await db.DropCollectionAsync(_resourceCollectionName);
+            await db.DropCollectionAsync(_trainDataCollectionName);
+        }
+
+
+        /// <summary>
         /// Get bot configuration collection.
         /// </summary>
         public IMongoCollection<BotModel> BotCollection => GetCollection<BotModel>();
