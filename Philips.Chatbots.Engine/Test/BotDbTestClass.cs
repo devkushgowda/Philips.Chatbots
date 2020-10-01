@@ -23,6 +23,7 @@ namespace Philips.Chatbots.Engine.Test
         /// <returns></returns>
         public async static Task Feed(string botId, bool dropDatabase, string profileName = BotChatProfile.DefaultProfile)
         {
+            #region Load Db from Code
             if (dropDatabase)
             {
                 await MongoDbProvider.DropDatabase();
@@ -192,25 +193,27 @@ namespace Philips.Chatbots.Engine.Test
             #region battery
 
             #endregion
+            
+            #endregion
 
             #region resources
             var stringRes = new List<KeyValuePair<string, string>> {
             new KeyValuePair<string, string>(BotResourceKeyConstants.ThankYou, "Thank you, Have a great day!"),
-             new KeyValuePair<string, string>(BotResourceKeyConstants.WhatIssue, "What in the following are you facing issue with?"),
-             new KeyValuePair<string, string>(BotResourceKeyConstants.SelectedIssue, "You have selected '{Name}' category issues."),
-             new KeyValuePair<string, string>(BotResourceKeyConstants.WeHelpYou, "That's terrific!\n do not worry, we are here to help you."),
-             new KeyValuePair<string, string>(BotResourceKeyConstants.CannotMoveBack, "Cannont move back, No history recorded yet."),
+             new KeyValuePair<string, string>(BotResourceKeyConstants.WhatIssue, "What in the following do you need help with?"),
+             new KeyValuePair<string, string>(BotResourceKeyConstants.SelectedIssue, "You have selected '{Name}' as your issue."),
+             new KeyValuePair<string, string>(BotResourceKeyConstants.WeHelpYou, "Don't worry, we are here to help you."),
+             new KeyValuePair<string, string>(BotResourceKeyConstants.CannotMoveBack, "Cannot move back, No history recorded yet."),
              new KeyValuePair<string, string>(BotResourceKeyConstants.Error, "Encountered an error while processing request, please contact bot administrator."),
-             new KeyValuePair<string, string>(BotResourceKeyConstants.FoundSolution, "Here we found few matching solutions"),
+             new KeyValuePair<string, string>(BotResourceKeyConstants.FoundSolution, "Here, we found few matching solutions"),
              new KeyValuePair<string, string>(BotResourceKeyConstants.InvalidInput, "Invalid input, please try again."),
-             new KeyValuePair<string, string>(BotResourceKeyConstants.ThankYouFeedback, "Kudos for your feedback."),
+             new KeyValuePair<string, string>(BotResourceKeyConstants.ThankYouFeedback, "Thanks for your feedback."),
              new KeyValuePair<string, string>(BotResourceKeyConstants.StartAgain, "Facing another issue?:start"),
              new KeyValuePair<string, string>(BotResourceKeyConstants.AdvanceChatQuery, "Tell us about your issue:"),
              new KeyValuePair<string, string>(BotResourceKeyConstants.NoMatchFound, "No match found, try again in different words."),
-             new KeyValuePair<string, string>(BotResourceKeyConstants.Feedback, "Please help us improve our service, Was the soulution helpful?"),
+             new KeyValuePair<string, string>(BotResourceKeyConstants.Feedback, "Please help us improve our service, Was the solution helpful?"),
 
-                new KeyValuePair<string, string>(BotResourceKeyConstants.FeedBackOptions, "Yes:yes,No:no,Exit:exit"),
-                new KeyValuePair<string, string>(BotResourceKeyConstants.CommonActionOptions, "Back:back,Exit:exit")
+             new KeyValuePair<string, string>(BotResourceKeyConstants.FeedBackOptions, "Yes:yes,No:no,Exit:exit"),
+             new KeyValuePair<string, string>(BotResourceKeyConstants.CommonActionOptions, "Back:back,Exit:exit")
             };
 
             await DbBotCollection.AddStringResourceBatchById(botId, stringRes);
@@ -246,7 +249,7 @@ namespace Philips.Chatbots.Engine.Test
             };
 
             await DbTrainDataCollection.InsertNew(displayTrainModel);
-
+           
             #endregion
         }
     }
