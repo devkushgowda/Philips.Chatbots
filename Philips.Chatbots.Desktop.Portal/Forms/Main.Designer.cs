@@ -80,11 +80,12 @@
             this.lnkBotConfigurations = new System.Windows.Forms.LinkLabel();
             this.lnkNeuralActions = new System.Windows.Forms.LinkLabel();
             this.lnkNeuralResources = new System.Windows.Forms.LinkLabel();
-            this.lnkLabelRefreshTree = new System.Windows.Forms.LinkLabel();
+            this.lnkRefreshTree = new System.Windows.Forms.LinkLabel();
             this.cbxChatProfiles = new System.Windows.Forms.ComboBox();
             this.cbxDataBases = new System.Windows.Forms.ComboBox();
             this.lblDatabase = new System.Windows.Forms.Label();
             this.gbNeuralTree = new System.Windows.Forms.GroupBox();
+            this.lnkClone = new System.Windows.Forms.LinkLabel();
             this.gbNeuralNodeConfiguration.SuspendLayout();
             this.gbQuickLinks.SuspendLayout();
             this.gbOtherConfigurations.SuspendLayout();
@@ -551,16 +552,16 @@
             this.lnkNeuralResources.Text = "Neural resources";
             this.lnkNeuralResources.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkNeuralResources_LinkClicked);
             // 
-            // lnkLabelRefreshTree
+            // lnkRefreshTree
             // 
-            this.lnkLabelRefreshTree.AutoSize = true;
-            this.lnkLabelRefreshTree.Location = new System.Drawing.Point(309, 69);
-            this.lnkLabelRefreshTree.Name = "lnkLabelRefreshTree";
-            this.lnkLabelRefreshTree.Size = new System.Drawing.Size(58, 20);
-            this.lnkLabelRefreshTree.TabIndex = 3;
-            this.lnkLabelRefreshTree.TabStop = true;
-            this.lnkLabelRefreshTree.Text = "Refresh";
-            this.lnkLabelRefreshTree.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkLabelRefreshTree_LinkClicked);
+            this.lnkRefreshTree.AutoSize = true;
+            this.lnkRefreshTree.Location = new System.Drawing.Point(309, 69);
+            this.lnkRefreshTree.Name = "lnkRefreshTree";
+            this.lnkRefreshTree.Size = new System.Drawing.Size(58, 20);
+            this.lnkRefreshTree.TabIndex = 3;
+            this.lnkRefreshTree.TabStop = true;
+            this.lnkRefreshTree.Text = "Refresh";
+            this.lnkRefreshTree.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkLabelRefreshTree_LinkClicked);
             // 
             // cbxChatProfiles
             // 
@@ -597,17 +598,29 @@
             // 
             // gbNeuralTree
             // 
+            this.gbNeuralTree.Controls.Add(this.lnkClone);
             this.gbNeuralTree.Controls.Add(this.cbxChatProfiles);
             this.gbNeuralTree.Controls.Add(this.lblDatabase);
             this.gbNeuralTree.Controls.Add(this.neuralTree);
             this.gbNeuralTree.Controls.Add(this.cbxDataBases);
             this.gbNeuralTree.Controls.Add(this.lblProfile);
-            this.gbNeuralTree.Controls.Add(this.lnkLabelRefreshTree);
+            this.gbNeuralTree.Controls.Add(this.lnkRefreshTree);
             this.gbNeuralTree.Location = new System.Drawing.Point(12, 12);
             this.gbNeuralTree.Name = "gbNeuralTree";
             this.gbNeuralTree.Size = new System.Drawing.Size(371, 644);
             this.gbNeuralTree.TabIndex = 8;
             this.gbNeuralTree.TabStop = false;
+            // 
+            // lnkClone
+            // 
+            this.lnkClone.AutoSize = true;
+            this.lnkClone.Location = new System.Drawing.Point(309, 31);
+            this.lnkClone.Name = "lnkClone";
+            this.lnkClone.Size = new System.Drawing.Size(47, 20);
+            this.lnkClone.TabIndex = 9;
+            this.lnkClone.TabStop = true;
+            this.lnkClone.Text = "Clone";
+            this.lnkClone.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkClone_LinkClicked);
             // 
             // Main
             // 
@@ -688,7 +701,7 @@
         private System.Windows.Forms.LinkLabel lnkBotConfigurations;
         private System.Windows.Forms.LinkLabel lnkNeuralActions;
         private System.Windows.Forms.LinkLabel lnkNeuralResources;
-        private System.Windows.Forms.LinkLabel lnkLabelRefreshTree;
+        private System.Windows.Forms.LinkLabel lnkRefreshTree;
         private System.Windows.Forms.ComboBox cbxChatProfiles;
         private System.Windows.Forms.LinkLabel lnkTrainModel;
         private System.Windows.Forms.LinkLabel lnkProgressResultAction;
@@ -696,6 +709,7 @@
         private System.Windows.Forms.ComboBox cbxDataBases;
         private System.Windows.Forms.Label lblDatabase;
         private System.Windows.Forms.GroupBox gbNeuralTree;
+        private System.Windows.Forms.LinkLabel lnkClone;
     }
 }
 

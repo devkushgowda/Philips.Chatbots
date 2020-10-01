@@ -4,6 +4,7 @@ using Philips.Chatbots.Data.Models.Neural;
 using Philips.Chatbots.Database.Extension;
 using Philips.Chatbots.Database.MongoDB;
 using System.Threading.Tasks;
+using static Philips.Chatbots.Database.Common.DbAlias;
 
 namespace Philips.Chatbots.Database.Common
 {
@@ -15,14 +16,7 @@ namespace Philips.Chatbots.Database.Common
 
         private static BotModel _botConfiguration = MongoDbProvider.GetCollection<BotModel>().Find(x => x._id == BotAlphaName).FirstOrDefault();
 
-        private static string _activeProfile = _botConfiguration?.Configuration?.ActiveProfile ?? BotChatProfile.DefaultProfile;
-
-        private static string _linkCollectionName = _activeProfile == BotChatProfile.DefaultProfile ? nameof(NeuralLinkModel) : $"{_activeProfile}_{nameof(NeuralLinkModel)}";
-        private static string _actionCollectionName = _activeProfile == BotChatProfile.DefaultProfile ? nameof(NeuralActionModel) : $"{_activeProfile}_{nameof(NeuralActionModel)}";
-        private static string _resourceCollectionName = _activeProfile == BotChatProfile.DefaultProfile ? nameof(NeuralResourceModel) : $"{_activeProfile}_{nameof(NeuralResourceModel)}";
-        private static string _trainDataCollectionName = _activeProfile == BotChatProfile.DefaultProfile ? nameof(NeuraTrainDataModel) : $"{_activeProfile}_{nameof(NeuraTrainDataModel)}";
-
-
+        private static MongoDbContext _dbContext = new MongoDbContext(_botConfiguration?.Configuration?.ActiveProfile ?? BotChatProfile.DefaultProfile);
         /// <summary>
         /// Get bot configuration collection.
         /// </summary>
@@ -44,13 +38,7 @@ namespace Philips.Chatbots.Database.Common
             if (profile == null)
                 profile = await DbBotCollection.AddOrUpdateChatProfileById(BotAlphaName, new BotChatProfile() { Name = BotChatProfile.DefaultProfile });
 
-            _activeProfile = profile?.Name ?? BotChatProfile.DefaultProfile;
-
-            _linkCollectionName = _activeProfile == BotChatProfile.DefaultProfile ? nameof(NeuralLinkModel) : $"{_activeProfile}_{nameof(NeuralLinkModel)}";
-            _actionCollectionName = _activeProfile == BotChatProfile.DefaultProfile ? nameof(NeuralActionModel) : $"{_activeProfile}_{nameof(NeuralActionModel)}";
-            _resourceCollectionName = _activeProfile == BotChatProfile.DefaultProfile ? nameof(NeuralResourceModel) : $"{_activeProfile}_{nameof(NeuralResourceModel)}";
-            _trainDataCollectionName = _activeProfile == BotChatProfile.DefaultProfile ? nameof(NeuraTrainDataModel) : $"{_activeProfile}_{nameof(NeuraTrainDataModel)}";
-
+            _dbContext.SyncChatProfile(profile?.Name ?? BotChatProfile.DefaultProfile);
         }
 
         /// <summary>
@@ -68,21 +56,21 @@ namespace Philips.Chatbots.Database.Common
         /// <summary>
         /// Get neural link collection.
         /// </summary>
-        public static IMongoCollection<NeuralLinkModel> DbLinkCollection => MongoDbProvider.GetCollection<NeuralLinkModel>(collectionName: _linkCollectionName);
+        public static IMongoCollection<NeuralLinkModel> DbLinkCollection => _dbContext.LinkCollection;
 
         /// <summary>
         /// Get neural action collection.
         /// </summary>
-        public static IMongoCollection<NeuralActionModel> DbActionCollection => MongoDbProvider.GetCollection<NeuralActionModel>(collectionName: _actionCollectionName);
+        public static IMongoCollection<NeuralActionModel> DbActionCollection => _dbContext.ActionCollection;
 
         /// <summary>
         /// Get neural resource collection.
         /// </summary>
-        public static IMongoCollection<NeuralResourceModel> DbResourceCollection => MongoDbProvider.GetCollection<NeuralResourceModel>(collectionName: _resourceCollectionName);
+        public static IMongoCollection<NeuralResourceModel> DbResourceCollection => _dbContext.ResourceCollection;
 
         /// <summary>
         /// Get neural train data collection.
         /// </summary>
-        public static IMongoCollection<NeuraTrainDataModel> DbTrainDataCollection => MongoDbProvider.GetCollection<NeuraTrainDataModel>(collectionName: _trainDataCollectionName);
+        public static IMongoCollection<NeuraTrainDataModel> DbTrainDataCollection => _dbContext.TrainDataCollection;
     }
 }

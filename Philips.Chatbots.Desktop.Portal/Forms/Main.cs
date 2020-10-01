@@ -428,6 +428,7 @@ namespace Philips.Chatbots.Desktop.Portal
         private void Main_Load(object sender, EventArgs e)
         {
             LoadDatabases();
+            lnkClone.Enabled = cbxDataBases.Items.Count > 1;
         }
 
         private void LoadDatabases()
@@ -435,7 +436,6 @@ namespace Philips.Chatbots.Desktop.Portal
             var config = Program.AppConfiguration;
             cbxDataBases.Items.AddRange(config.DbConnections.Select(x => x.Key).ToArray());
             cbxDataBases.Text = config.ActiveDb;
-
         }
 
         private async void lnkTrainModel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -568,6 +568,14 @@ namespace Philips.Chatbots.Desktop.Portal
                 await LoadChatProfiles();
                 gbOtherConfigurations.Enabled = true;
                 cbxChatProfiles.Enabled = true;
+            }
+        }
+
+        private async void lnkClone_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            if (DialogResult.OK == new CloneDatabase().ShowDialog())
+            {
+                await LoadChatProfiles();
             }
         }
     }
