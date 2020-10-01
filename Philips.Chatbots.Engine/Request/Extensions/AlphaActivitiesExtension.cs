@@ -38,12 +38,17 @@ namespace Philips.Chatbots.Engine.Request.Extensions
             activity.Attachments = resources.Select(res =>
             {
                 Attachment attachment = null;
+                string curDir = Environment.CurrentDirectory;
+                if (res.IsLocal)
+                {
+                    res.Location = System.IO.Path.Combine(curDir, "resources", res.Location);
+                }
                 switch (res.Type)
                 {
                     case ResourceType.ImagePNG:
                     case ResourceType.ImageJPG:
                     case ResourceType.ImageGIF:
-                        {
+                        {                           
                             attachment = new HeroCard
                             {
                                 Title = res.Title,
