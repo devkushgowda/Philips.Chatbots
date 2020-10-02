@@ -159,6 +159,7 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                 case ExpEvalResultType.False:
                 case ExpEvalResultType.True:
                     {
+                        await SendNotes(curLink, turnContext);
                         switch (actionResult.Type)
                         {
                             case LinkType.NeuralLink:
@@ -200,8 +201,8 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                             {
                                 await SendReply(turnContext, StringsProvider.TryGet(BotResourceKeyConstants.Feedback), SuggestionExtension.GetFeedbackSuggestionActions());
                             });
+                        res = true;
                     }
-                    res = true;
                     break;
                 case ExpEvalResultType.Exception:
                 case ExpEvalResultType.Invalid:
@@ -222,6 +223,12 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
             return res;
         }
 
+        private async Task SendNotes(NeuralLinkModel curLink, ITurnContext turnContext)
+        {
+            foreach (var note in curLink.Notes)
+                await turnContext.SendActivityAsync(curLink.ApplyFormat(note));
+        }
+
         private async Task SendReply(ITurnContext turnContext, string message, SuggestedActions suggestedActions = null)
         {
             var reply = turnContext.Activity.CreateReply(message);
@@ -238,15 +245,14 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
 
             if (curLink?.NeuralExp != null)
             {
-                foreach (var note in curLink.Notes)
-                    await turnContext.SendActivityAsync(curLink.ApplyFormat(note));
-
                 if (curLink.NeuralExp.SkipEvaluation)
                 {
-                    await EvaluateExpressionInput(turnContext, requestState);//Default expression
+                    res = await EvaluateExpressionInput(turnContext, requestState);//Default expression
                 }
                 else
                 {
+                    await SendNotes(curLink, turnContext);
+
                     var title = curLink.NeuralExp.QuestionTitle;
                     SuggestedActions suggestedActions = null;
 
@@ -270,8 +276,8 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                     }
 
                     requestState.CurrentState = ChatStateType.ExpInput;
+                    res = true;
                 }
-                res = true;
             }
             return res;
         }
@@ -283,7 +289,7 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
 
             if (!isExpression)
             {
-                if (curLink.Notes?.Count == 0)
+                if ((int)(curLink.Notes?.Count) == 0)
                 {
                     await SendReply(turnContext, curLink.ApplyFormat(curLink.Title), curLink.GetChildSuggestionActions());
                 }
