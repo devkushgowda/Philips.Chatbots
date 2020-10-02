@@ -4,6 +4,7 @@ using Philips.Chatbots.Desktop.Portal.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Philips.Chatbots.Desktop.Portal
@@ -38,9 +39,6 @@ namespace Philips.Chatbots.Desktop.Portal
             this.expression = expression;
             InitializeComponent();
 
-            LoadData();
-
-            AddContextMenu();
         }
 
         private void BindActionLinks()
@@ -98,7 +96,7 @@ namespace Philips.Chatbots.Desktop.Portal
             dataGridViewActionItems.ContextMenuStrip = actionMenu;
         }
 
-        private void LoadData()
+        private async Task LoadData()
         {
             LoadAllEnumDictionary();
 
@@ -166,7 +164,9 @@ namespace Philips.Chatbots.Desktop.Portal
 
             if (expression?.ForwardAction != null)
             {
-                cbxForwardActionType.SelectedValue = (int)expression.ForwardAction.Type;
+                var linkType = expression.ForwardAction.Type;
+                cbxForwardActionType.SelectedValue = (int)linkType;
+                await FillForwardActionLinks(cbxForwardActionNode, linkType);
                 cbxForwardActionNode.SelectedValue = expression.ForwardAction.LinkId;
             }
             else
@@ -177,7 +177,9 @@ namespace Philips.Chatbots.Desktop.Portal
 
             if (expression?.FallbackAction != null)
             {
-                cbxFallbackActionType.SelectedValue = (int)expression.FallbackAction.Type;
+                var linkType = expression.FallbackAction.Type;
+                cbxFallbackActionType.SelectedValue = (int)linkType;
+                await FillForwardActionLinks(cbxFallbackActionNode, linkType);
                 cbxFallbackActionNode.SelectedValue = expression.FallbackAction.LinkId;
             }
             else
@@ -446,8 +448,13 @@ namespace Philips.Chatbots.Desktop.Portal
                 ((BindingSource)cbxForwardActionNode.DataSource).DataSource = new List<ILinkInfo>();
             else
             {
-                ((BindingSource)cbxForwardActionNode.DataSource).DataSource = await ((LinkType)(item.Value)).GetAllLinks();
+                await FillForwardActionLinks(cbxForwardActionNode, (LinkType)(item.Value));
             }
+        }
+
+        private async Task FillForwardActionLinks(ComboBox cbx, LinkType linkType)
+        {
+            ((BindingSource)cbx.DataSource).DataSource = await linkType.GetAllLinks();
         }
 
         private async void cbxFallbackActionType_SelectedIndexChanged(object sender, EventArgs e)
@@ -458,7 +465,7 @@ namespace Philips.Chatbots.Desktop.Portal
                 ((BindingSource)cbxFallbackActionNode.DataSource).DataSource = new List<ILinkInfo>();
             else
             {
-                ((BindingSource)cbxFallbackActionNode.DataSource).DataSource = await ((LinkType)(item.Value)).GetAllLinks();
+                await FillForwardActionLinks(cbxFallbackActionNode, (LinkType)(item.Value));
             }
         }
 
@@ -475,6 +482,12 @@ namespace Philips.Chatbots.Desktop.Portal
                 tbSuggestions.Text = "";
                 suggestionsList.ForEach(item => tbSuggestions.Text += $"{item.Key}:{item.Value},");
             }
+        }
+
+        private async void DecisionExpressionEditor_Load(object sender, EventArgs e)
+        {
+            await LoadData();
+            AddContextMenu();
         }
     }
 }

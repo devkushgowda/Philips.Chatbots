@@ -151,7 +151,6 @@ namespace Philips.Chatbots.Engine.Test
             {
                 Name = "Unpleasant sound",
                 Title = $"[{BotResourceKeyConstants.SelectedIssue}]",
-                Notes = new List<string> { $"[{BotResourceKeyConstants.WeHelpYou}]", $"[{BotResourceKeyConstants.WhatIssue}]" },
                 NeuralExp = new DecisionExpression
                 {
                     Hint = "Yes:yes,No:no",

@@ -237,6 +237,7 @@
             this.Name = "DecisionExpressionEditor";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Decision expression editor";
+            this.Load += new System.EventHandler(this.DecisionExpressionEditor_Load);
             this.gbExpression.ResumeLayout(false);
             this.gbExpression.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewActionItems)).EndInit();

@@ -289,7 +289,7 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
 
             if (!isExpression)
             {
-                if ((int)(curLink.Notes?.Count) == 0)
+                if (curLink.Notes?.Count == 0)
                 {
                     await SendReply(turnContext, curLink.ApplyFormat(curLink.Title), curLink.GetChildSuggestionActions());
                 }
