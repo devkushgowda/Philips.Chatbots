@@ -9,8 +9,8 @@ using Philips.Chatbots.Engine.Requst.Handlers;
 using Philips.Chatbots.Session;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using static Philips.Chatbots.Database.Common.DbAlias;
 
 
@@ -37,60 +37,72 @@ namespace Philips.Chatbots.Engine.Request.Extensions
 
             activity.Attachments = resources.Select(res =>
             {
-                Attachment attachment = null;
-                string curDir = Environment.CurrentDirectory;
-                if (res.IsLocal)
-                {
-                    res.Location = System.IO.Path.Combine(curDir, "resources", res.Location);
-                }
-                switch (res.Type)
-                {
-                    case ResourceType.ImagePNG:
-                    case ResourceType.ImageJPG:
-                    case ResourceType.ImageGIF:
-                        {                           
-                            attachment = new HeroCard
-                            {
-                                Title = res.Title,
-                                Images = new List<CardImage> { new CardImage { Url = res.Location } }
-                            }.ToAttachment();
-                        }
-                        break;
-                    case ResourceType.Audio:
-                        {
-                            var audioCard = new AudioCard(media: new[] { new MediaUrl(res.Location) });
-                            audioCard.Title = res.Title;
-                            attachment = audioCard.ToAttachment();
-                        }
-                        break;
-                    case ResourceType.Script:
-                    case ResourceType.DocumentPDF:
-                    case ResourceType.Text:
-                    case ResourceType.WebsiteUrl:
-                    case ResourceType.Json:
-                        {
-                            attachment = new HeroCard
-                            {
-                                Title = res.Title,
-                                Buttons = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, title: $"Open {Enum.GetName(res.Type.GetType(), res.Type)}", value: res.Location) }
-                            }.ToAttachment();
-                        }
-                        break;
-                    case ResourceType.Video:
-                        {
-                            var videoCard = new VideoCard(media: new[] { new MediaUrl(res.Location) });
-                            videoCard.Title = res.Title;
-                            attachment = videoCard.ToAttachment();
-                        }
-                        break;
-                    default:
-                        break;
-                }
-
-                return attachment;
-
+                return res.GetResourceAttachment();
             }).ToList();
 
+            return activity;
+        }
+
+        private static Attachment GetResourceAttachment(this NeuralResourceModel res)
+        {
+            Attachment attachment = null;
+            string curDir = Environment.CurrentDirectory;
+            if (res.IsLocal)
+            {
+                res.Location = Path.Combine(curDir, "resources", res.Location);
+            }
+            switch (res.Type)
+            {
+                case ResourceType.ImagePNG:
+                case ResourceType.ImageJPG:
+                case ResourceType.ImageGIF:
+                    {
+                        attachment = new HeroCard
+                        {
+                            Title = res.Title,
+                            Images = new List<CardImage> { new CardImage { Url = res.Location } }
+                        }.ToAttachment();
+                    }
+                    break;
+                case ResourceType.Audio:
+                    {
+                        var audioCard = new AudioCard(media: new[] { new MediaUrl(res.Location) });
+                        audioCard.Title = res.Title;
+                        attachment = audioCard.ToAttachment();
+                    }
+                    break;
+                case ResourceType.Script:
+                case ResourceType.DocumentPDF:
+                case ResourceType.Text:
+                case ResourceType.WebsiteUrl:
+                case ResourceType.Json:
+                    {
+                        attachment = new HeroCard
+                        {
+                            Title = res.Title,
+                            Buttons = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, title: $"Open {Enum.GetName(res.Type.GetType(), res.Type)}", value: res.Location) }
+                        }.ToAttachment();
+                    }
+                    break;
+                case ResourceType.Video:
+                    {
+                        var videoCard = new VideoCard(media: new[] { new MediaUrl(res.Location) });
+                        videoCard.Title = res.Title;
+                        attachment = videoCard.ToAttachment();
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            return attachment;
+
+        }
+
+        public static Activity BuildResourceResponse(this NeuralResourceModel neuralResourceModel, ITurnContext turnContext)
+        {
+            Activity activity = turnContext.Activity.CreateReply(neuralResourceModel.ApplyFormat(neuralResourceModel.Title));
+            activity.Attachments = new List<Attachment> { neuralResourceModel.GetResourceAttachment() };
             return activity;
         }
 
