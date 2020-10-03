@@ -69,6 +69,7 @@ namespace Philips.Chatbots.Engine.Session
 
             NeuralLinkModel top;
             bool res = LinkHistory.TryPop(out top);
+            res = LinkHistory.TryPop(out top);
             if (res)
             {
                 _currentLink = top;

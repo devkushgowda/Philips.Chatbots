@@ -174,7 +174,7 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                                     else
                                     {
                                         //Invalid expression evaluation link id.
-                                        await SendReply(turnContext, $"Invalid node information : '{actionResult.LinkId}',please repot this issue to the bot administrator.", SuggestionExtension.GetCommonSuggestionActions());
+                                        await SendReply(turnContext, $"Invalid node information : '{actionResult.LinkId}',please report this issue to the bot administrator.", SuggestionExtension.GetCommonSuggestionActions());
                                     }
 
                                 }
@@ -213,7 +213,7 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                     break;
                 case ExpEvalResultType.Empty://TODO
                     {
-                        await SendReply(turnContext, $"Evaluated empty expression of node : '{curLink._id}',please repot this issue to the bot administrator.", SuggestionExtension.GetCommonSuggestionActions());
+                        await SendReply(turnContext, $"Evaluated empty expression of node : '{curLink._id}',please report this issue to the bot administrator.", SuggestionExtension.GetCommonSuggestionActions());
                     }
                     break;
                 default:

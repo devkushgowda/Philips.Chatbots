@@ -1,6 +1,7 @@
 @ECHO OFF
 SETLOCAL ENABLEDELAYEDEXPANSION
-cd resources
+cd /D "%~dp0"
+ECHO %CD%
 ECHO Checking if RF Amplifier Dump files are present..
 if exist RFAMPDUMP*.log (
     ECHO RF Amplifier Fault has occured at: 
@@ -11,6 +12,4 @@ if exist RFAMPDUMP*.log (
 ) else (
     ECHO RF Amplifier Fault has not occurred.
 )
-
-
 PAUSE

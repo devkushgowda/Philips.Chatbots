@@ -1,7 +1,7 @@
 @ECHO OFF
 SETLOCAL ENABLEDELAYEDEXPANSION
-ECHO %CD%
 cd /D "%~dp0"
+ECHO %CD%
 ECHO Checking if Gradient Dump files are present..
 if exist GRADDUMP*.log (
     ECHO Gradient Fault has occured at: 
@@ -12,6 +12,4 @@ if exist GRADDUMP*.log (
 ) else (
     ECHO Gradient Fault has not occurred.
 )
-
-
 PAUSE
