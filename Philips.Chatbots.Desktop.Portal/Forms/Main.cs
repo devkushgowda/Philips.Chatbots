@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using Philips.Chatbots.Data.Models;
 using Philips.Chatbots.Data.Models.Interfaces;
 using Philips.Chatbots.Data.Models.Neural;
+using Philips.Chatbots.Database.Common;
 using Philips.Chatbots.Database.Extension;
 using Philips.Chatbots.Database.MongoDB;
 using Philips.Chatbots.Desktop.Portal.Configuration;
@@ -28,6 +29,7 @@ namespace Philips.Chatbots.Desktop.Portal
         private const string MenuActionUnmapChild = "Unmap from parent";
         private const string MenuActionNewProfile = "New chat profile";
         private const string MenuActionDeleteProfile = "Delete chat profile";
+        private const string MenuActionRenameProfile = "Rename chat profile";
 
         private const string ActionResultDeleteProfile = "Browse output location and verify trained model result";
 
@@ -107,6 +109,7 @@ namespace Philips.Chatbots.Desktop.Portal
                 new ToolStripMenuItem() { Text = MenuActionUnmapChild },
                 new ToolStripMenuItem() { Text = MenuActionDelete },
                 new ToolStripMenuItem() { Text = MenuActionNewProfile },
+                new ToolStripMenuItem() { Text = MenuActionRenameProfile },
                 new ToolStripMenuItem() { Text = MenuActionDeleteProfile }
             });
 
@@ -382,6 +385,9 @@ namespace Philips.Chatbots.Desktop.Portal
 
                 switch (clicked)
                 {
+                    case MenuActionRenameProfile:
+                        await RenameChatProfile();
+                        break;
                     case MenuActionDeleteProfile:
                         await DeleteCurrentChatProfile();
                         break;
@@ -411,6 +417,44 @@ namespace Philips.Chatbots.Desktop.Portal
                 neuralTree.ExpandAll();
 
             }
+        }
+
+        private async Task RenameChatProfile()
+        {
+            var picker = new SingleInputForm("Enter new profile name", "", "Rename");
+            var res = picker.ShowDialog();
+            if (res == DialogResult.OK && !string.IsNullOrWhiteSpace(picker.ResultString))
+            {
+                if (picker.ResultString != cbxChatProfiles.Text && string.IsNullOrWhiteSpace(cbxChatProfiles.Items.Cast<string>().Where(x => x != cbxChatProfiles.Text).FirstOrDefault(x => x.Equals(picker.ResultString, StringComparison.InvariantCultureIgnoreCase))))
+                {
+                    gbNeuralNodeConfiguration.Enabled = gbNeuralTree.Enabled = gbOtherConfigurations.Enabled = gbQuickLinks.Enabled = false;
+                    var profile = await DbBotCollection.GetActiveChatProfile(BotAlphaName);
+                    profile.Name = picker.ResultString;
+                    await DbBotCollection.AddOrUpdateChatProfileById(BotAlphaName, profile);
+                    await DbBotCollection.RemoveChatProfileById(BotAlphaName, cbxChatProfiles.Text);
+                    await DbBotCollection.SetActiveChatProfileById(BotAlphaName, profile.Name);
+                    var fromDb = new MongoDbContext(cbxChatProfiles.Text, Program.AppConfiguration.DbConnections[cbxDataBases.Text]);
+                    var toDb = new MongoDbContext(picker.ResultString, Program.AppConfiguration.DbConnections[cbxDataBases.Text]);
+                    await toDb.DropAllNodeCollections();
+                    await CopyDb(fromDb, toDb);
+                    await fromDb.DropAllNodeCollections();
+                    await SyncChatProfile();
+                    await LoadChatProfiles();
+                    gbNeuralNodeConfiguration.Enabled = gbNeuralTree.Enabled = gbOtherConfigurations.Enabled = gbQuickLinks.Enabled = true;
+                }
+            }
+        }
+
+        private async Task CopyDb(MongoDbContext fromDb, MongoDbContext toDb)
+        {
+            if ((await fromDb.ResourceCollection.CountDocumentsAsync(x => true)) > 0)
+                await toDb.ResourceCollection.InsertManyAsync(await fromDb.ResourceCollection.Find(x => true).ToListAsync());
+            if ((await fromDb.LinkCollection.CountDocumentsAsync(x => true)) > 0)
+                await toDb.LinkCollection.InsertManyAsync(await fromDb.LinkCollection.Find(x => true).ToListAsync());
+            if ((await fromDb.ActionCollection.CountDocumentsAsync(x => true)) > 0)
+                await toDb.ActionCollection.InsertManyAsync(await fromDb.ActionCollection.Find(x => true).ToListAsync());
+            if ((await fromDb.TrainDataCollection.CountDocumentsAsync(x => true)) > 0)
+                await toDb.TrainDataCollection.InsertManyAsync(await fromDb.TrainDataCollection.Find(x => true).ToListAsync());
         }
 
         private async void cbxChatProfiles_TextChanged(object sender, EventArgs e)
