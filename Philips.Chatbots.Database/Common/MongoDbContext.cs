@@ -69,6 +69,8 @@ namespace Philips.Chatbots.Database.Common
         public async Task RenameCurrentChatProfile(string newProfileName)
         {
             await RenameChatProfile(_activeProfile, newProfileName);
+            await BotCollection.SetActiveChatProfileById(BotAlphaName, newProfileName);
+            SyncChatProfile(newProfileName);
         }
 
         /// <summary>
@@ -85,7 +87,6 @@ namespace Philips.Chatbots.Database.Common
             profile.Name = newProfileName;
             await BotCollection.AddOrUpdateChatProfileById(BotAlphaName, profile);
             await BotCollection.RemoveChatProfileById(BotAlphaName, _activeProfile);
-            await BotCollection.SetActiveChatProfileById(BotAlphaName, profile.Name);
 
             var curLinkCollectionName = GetLinkCollectionName(oldProfileName);
             if (await CollectionExistsAsync(db, curLinkCollectionName))
@@ -103,7 +104,6 @@ namespace Philips.Chatbots.Database.Common
             if (await CollectionExistsAsync(db, curTrainDataCollectionName))
                 await db.RenameCollectionAsync(curTrainDataCollectionName, GetTrainDataCollectionName(newProfileName));
 
-            SyncChatProfile(newProfileName);
         }
 
         /// <summary>
