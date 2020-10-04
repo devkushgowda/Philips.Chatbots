@@ -20,7 +20,7 @@ namespace Philips.Chatbots.ML.Models
         {
             _path = path ?? ModelFilePath;
             if (initilize)
-                Initilize();
+                Initialize();
         }
         public override string ModelOutputPath => _path;
     }

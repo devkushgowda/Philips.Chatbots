@@ -17,7 +17,7 @@ namespace Philips.Chatbots.ML
 
         public abstract string ModelOutputPath { get; }
 
-        public void Initilize(string modelPath = null)
+        public void Initialize(string modelPath = null)
         {
             ITransformer loadedModel = _mlContext.Model.Load(modelPath ?? ModelOutputPath, out var modelInputSchema);
             _predEngine = _mlContext.Model.CreatePredictionEngine<Input, Output>(loadedModel);

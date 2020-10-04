@@ -88,7 +88,7 @@ namespace Philips.Chatbots.Engine.Session
 
         public string PredictNode(string input) => _predictionEnginePool.Predict(nameof(NeuralPredictionEngine), new NeuralTrainInput { Text = input })._id;
 
-        public async Task Initilize(string userId, string botId, IRequestPipeline requestPipeline, PredictionEnginePool<NeuralTrainInput, PredictionOutput> predictionEnginePool)
+        public async Task Initialize(string userId, string botId, IRequestPipeline requestPipeline, PredictionEnginePool<NeuralTrainInput, PredictionOutput> predictionEnginePool)
         {
             _botId = botId ?? throw new ArgumentNullException(nameof(botId));
             _userId = userId ?? throw new ArgumentNullException(nameof(userId));

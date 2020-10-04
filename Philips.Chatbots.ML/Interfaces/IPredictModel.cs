@@ -18,10 +18,10 @@ namespace Philips.Chatbots.ML.Interfaces
         Output Predict(Input input);
 
         /// <summary>
-        /// Initilize prediction engine.
+        /// Initialize prediction engine.
         /// </summary>
         /// <param name="modelPath"></param>
-        void Initilize(string modelPath);
+        void Initialize(string modelPath);
 
     }
 }

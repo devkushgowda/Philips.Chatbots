@@ -27,7 +27,7 @@ namespace Philips.Chatbots.Engine.Session
             if (!_requestStateCache.TryGetValue(id, out res))
             {
                 res = new RequestState();
-                await res.Initilize(id, botId, RequestPipeline, predictionEngine);
+                await res.Initialize(id, botId, RequestPipeline, predictionEngine);
                 _requestStateCache.TryAdd(res.UserId, res);
             }
             return res;
