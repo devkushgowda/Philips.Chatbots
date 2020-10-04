@@ -4,7 +4,6 @@ using Philips.Chatbots.Data.Models.Neural;
 using Philips.Chatbots.Database.Extension;
 using Philips.Chatbots.Database.MongoDB;
 using System.Threading.Tasks;
-using static Philips.Chatbots.Database.Common.DbAlias;
 
 namespace Philips.Chatbots.Database.Common
 {
@@ -21,6 +20,11 @@ namespace Philips.Chatbots.Database.Common
         /// Get bot configuration collection.
         /// </summary>
         public static IMongoCollection<BotModel> DbBotCollection => MongoDbProvider.GetCollection<BotModel>();
+
+        /// <summary>
+        /// Get Mongo DB context object.
+        /// </summary>
+        public static MongoDbContext DbContext => _dbContext;
 
         /// <summary>
         /// Default bot name.

@@ -1,11 +1,11 @@
-﻿using MongoDB.Driver;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
 using Philips.Chatbots.Data.Models;
 using Philips.Chatbots.Data.Models.Interfaces;
 using Philips.Chatbots.Data.Models.Neural;
+using Philips.Chatbots.Database.Extension;
 using Philips.Chatbots.Database.MongoDB;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Philips.Chatbots.Database.Common
@@ -25,7 +25,11 @@ namespace Philips.Chatbots.Database.Common
         private string _resourceCollectionName;
         private string _trainDataCollectionName;
 
-
+        /// <summary>
+        /// Create db context.
+        /// </summary>
+        /// <param name="profileName"></param>
+        /// <param name="connectionString"></param>
         public MongoDbContext(string profileName = BotChatProfile.DefaultProfile, string connectionString = null)
         {
             if (connectionString != null)
@@ -41,12 +45,102 @@ namespace Philips.Chatbots.Database.Common
         public void SyncChatProfile(string profileName)
         {
             _activeProfile = profileName ?? throw new ArgumentNullException(nameof(profileName));
-            _linkCollectionName = _activeProfile == BotChatProfile.DefaultProfile ? nameof(NeuralLinkModel) : $"{_activeProfile}_{nameof(NeuralLinkModel)}";
-            _actionCollectionName = _activeProfile == BotChatProfile.DefaultProfile ? nameof(NeuralActionModel) : $"{_activeProfile}_{nameof(NeuralActionModel)}";
-            _resourceCollectionName = _activeProfile == BotChatProfile.DefaultProfile ? nameof(NeuralResourceModel) : $"{_activeProfile}_{nameof(NeuralResourceModel)}";
-            _trainDataCollectionName = _activeProfile == BotChatProfile.DefaultProfile ? nameof(NeuraTrainDataModel) : $"{_activeProfile}_{nameof(NeuraTrainDataModel)}";
+            _linkCollectionName = GetLinkCollectionName(_activeProfile);
+            _actionCollectionName = GetActionCollectionName(_activeProfile);
+            _resourceCollectionName = GetResourceCollectionName(_activeProfile);
+            _trainDataCollectionName = GetTrainDataCollectionName(_activeProfile);
         }
 
+        /// <summary>
+        /// Check collection existance in database.
+        /// </summary>
+        /// <param name="db"></param>
+        /// <param name="collectionName"></param>
+        /// <returns></returns>
+        public async Task<bool> CollectionExistsAsync(IMongoDatabase db, string collectionName) => await (await db.ListCollectionsAsync(new ListCollectionsOptions { Filter = new BsonDocument("name", collectionName) })).AnyAsync();
+
+
+
+        /// <summary>
+        /// Rename existing chat profile.
+        /// </summary>
+        /// <param name="newProfileName"></param>
+        /// <returns></returns>
+        public async Task RenameCurrentChatProfile(string newProfileName)
+        {
+            await RenameChatProfile(_activeProfile, newProfileName);
+        }
+
+        /// <summary>
+        /// Update old chat profile collections to new chat profile name. 
+        /// </summary>
+        /// <param name="oldProfileName"></param>
+        /// <param name="newProfileName"></param>
+        /// <returns></returns>
+        public async Task RenameChatProfile(string oldProfileName, string newProfileName)
+        {
+            var db = GetDatabase();
+
+            var profile = await BotCollection.GetActiveChatProfile(BotAlphaName);
+            profile.Name = newProfileName;
+            await BotCollection.AddOrUpdateChatProfileById(BotAlphaName, profile);
+            await BotCollection.RemoveChatProfileById(BotAlphaName, _activeProfile);
+            await BotCollection.SetActiveChatProfileById(BotAlphaName, profile.Name);
+
+            var curLinkCollectionName = GetLinkCollectionName(oldProfileName);
+            if (await CollectionExistsAsync(db, curLinkCollectionName))
+                await db.RenameCollectionAsync(curLinkCollectionName, GetLinkCollectionName(newProfileName));
+
+            var curActionCollectionName = GetActionCollectionName(oldProfileName);
+            if (await CollectionExistsAsync(db, curActionCollectionName))
+                await db.RenameCollectionAsync(curActionCollectionName, GetActionCollectionName(newProfileName));
+
+            var curResourceCollectionName = GetResourceCollectionName(oldProfileName);
+            if (await CollectionExistsAsync(db, curResourceCollectionName))
+                await db.RenameCollectionAsync(curResourceCollectionName, GetResourceCollectionName(newProfileName));
+
+            var curTrainDataCollectionName = GetTrainDataCollectionName(oldProfileName);
+            if (await CollectionExistsAsync(db, curTrainDataCollectionName))
+                await db.RenameCollectionAsync(curTrainDataCollectionName, GetTrainDataCollectionName(newProfileName));
+
+            SyncChatProfile(newProfileName);
+        }
+
+        /// <summary>
+        /// Get Link collection name based on given profile.
+        /// </summary>
+        /// <param name="profileName"></param>
+        /// <returns></returns>
+        public static string GetLinkCollectionName(string profileName) => profileName == BotChatProfile.DefaultProfile ? nameof(NeuralLinkModel) : $"{profileName}_{nameof(NeuralLinkModel)}";
+
+        /// <summary>
+        /// Get Action collection name based on given profile.
+        /// </summary>
+        /// <param name="profileName"></param>
+        /// <returns></returns>
+        public static string GetActionCollectionName(string profileName) => profileName == BotChatProfile.DefaultProfile ? nameof(NeuralActionModel) : $"{profileName}_{nameof(NeuralActionModel)}";
+
+        /// <summary>
+        /// Get Resource collection name based on given profile.
+        /// </summary>
+        /// <param name="profileName"></param>
+        /// <returns></returns>
+        public static string GetResourceCollectionName(string profileName) => profileName == BotChatProfile.DefaultProfile ? nameof(NeuralResourceModel) : $"{profileName}_{nameof(NeuralResourceModel)}";
+
+        /// <summary>
+        /// Get Train data collection name based on given profile.
+        /// </summary>
+        /// <param name="profileName"></param>
+        /// <returns></returns>
+        public static string GetTrainDataCollectionName(string profileName) => profileName == BotChatProfile.DefaultProfile ? nameof(NeuraTrainDataModel) : $"{profileName}_{nameof(NeuraTrainDataModel)}";
+
+        /// <summary>
+        /// Get collection of given database and collection name.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="dbName"></param>
+        /// <param name="collectionName"></param>
+        /// <returns></returns>
         public IMongoCollection<T> GetCollection<T>(string dbName = DatabaseConstants.DefaultDatabaseName, string collectionName = null) where T : IDataModel
         {
             collectionName = collectionName ?? typeof(T).Name;
@@ -74,21 +168,19 @@ namespace Philips.Chatbots.Database.Common
         /// <returns></returns>
         public async Task DropAllNodeCollections(string dbName = DatabaseConstants.DefaultDatabaseName)
         {
-            IMongoDatabase db;
-
-            if (_client == null)
-            {
-                db = MongoDbProvider.GetDatabase(dbName);
-            }
-            else
-            {
-                db = _client.GetDatabase(dbName);
-            }
+            IMongoDatabase db = GetDatabase(dbName);
             await db.DropCollectionAsync(_linkCollectionName);
             await db.DropCollectionAsync(_actionCollectionName);
             await db.DropCollectionAsync(_resourceCollectionName);
             await db.DropCollectionAsync(_trainDataCollectionName);
         }
+
+        /// <summary>
+        /// Get database by name.
+        /// </summary>
+        /// <param name="dbName"></param>
+        /// <returns></returns>
+        public IMongoDatabase GetDatabase(string dbName = DatabaseConstants.DefaultDatabaseName) => _client == null ? MongoDbProvider.GetDatabase(dbName) : _client.GetDatabase(dbName);
 
 
         /// <summary>
