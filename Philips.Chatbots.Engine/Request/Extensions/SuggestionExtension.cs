@@ -18,11 +18,11 @@ namespace Philips.Chatbots.Engine.Request.Extensions
         private static string FeedBackOptions => StringsProvider.TryGet(BotResourceKeyConstants.FeedBackOptions);
         private static string CommonActionOptions => StringsProvider.TryGet(BotResourceKeyConstants.CommonActionOptions);
 
-        private static List<CardAction> ParseActionsFromColonFormatString(string input) => input?.Split(",").Select(item =>
-        {
-            var keyValue = item.Split(":");
-            return new CardAction { Title = keyValue[0], Value = keyValue[1], Type = ActionTypes.ImBack };
-        }).ToList();
+        private static List<CardAction> ParseActionsFromColonFormatString(string input) => input?.Split(",").Where(part => part.Contains(":")).Select(item =>
+          {
+              var keyValue = item.Split(":");
+              return new CardAction { Title = keyValue[0], Value = keyValue[1], Type = ActionTypes.ImBack };
+          }).ToList();
 
         /// <summary>
         /// Get children nodes suggestion based on ranking.
