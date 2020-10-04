@@ -11,6 +11,7 @@ using Philips.Chatbots.Engine.Request.Extensions;
 using Philips.Chatbots.Data.Models;
 using static Philips.Chatbots.Database.Common.DbAlias;
 using System.Linq;
+using System;
 
 namespace Philips.Chatbots.Engine.Requst.Handlers
 {
@@ -76,16 +77,24 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                         }
                         else
                         {
-                            var nextNodeId = requestState.PredictNode(text);
-                            var nextLink = await DbLinkCollection.FindOneById(nextNodeId);
-                            if (nextLink != null)
+                            string nextNodeId = null;
+                            try
                             {
-                                requestState.StepForward(nextLink);
-                                await SendResponseForCurrentNode(turnContext, requestState);
+                                nextNodeId = requestState.PredictNode(text);
+                                var nextLink = await DbLinkCollection.FindOneById(nextNodeId);
+                                if (nextLink != null)
+                                {
+                                    requestState.StepForward(nextLink);
+                                    await SendResponseForCurrentNode(turnContext, requestState);
+                                }
+                                else
+                                {
+                                    await SendReply(turnContext, StringsProvider.TryGet(BotResourceKeyConstants.NoMatchFound), SuggestionExtension.GetCommonSuggestionActions());
+                                }
                             }
-                            else
+                            catch (Exception e)
                             {
-                                await SendReply(turnContext, StringsProvider.TryGet(BotResourceKeyConstants.NoMatchFound), SuggestionExtension.GetCommonSuggestionActions());
+                                await SendReply(turnContext, $"ML prediction returned an error: '{e.Message}'. please report this issue to the bot administrator.", SuggestionExtension.GetCommonSuggestionActions("Exit:exit"));
                             }
                         }
                     }
@@ -159,7 +168,8 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                 case ExpEvalResultType.False:
                 case ExpEvalResultType.True:
                     {
-                        await SendNotes(curLink, turnContext);
+                        if (op == ExpEvalResultType.Skipped)
+                            await SendNotes(curLink, turnContext);
                         switch (actionResult.Type)
                         {
                             case LinkType.NeuralLink:
@@ -207,7 +217,7 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                 case ExpEvalResultType.Exception:
                 case ExpEvalResultType.Invalid:
                     {
-                        await SendReply(turnContext, "Invalid input, Try again!", SuggestionExtension.GetCommonSuggestionActions());
+                        await SendReply(turnContext, "Invalid input, please try again!", SuggestionExtension.GetCommonSuggestionActions("Exit:exit"));
                         requestState.CurrentState = ChatStateType.InvalidInput;
                     }
                     break;
@@ -257,7 +267,7 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
                     SuggestedActions suggestedActions = null;
 
                     if (curLink.NeuralExp.Hint != null && curLink.NeuralExp.Hint.Contains(":"))
-                        suggestedActions = curLink.GetHintSuggestionActions();
+                        suggestedActions = curLink.GetHintSuggestionActions(false);
 
                     if (curLink.NeuralExp is LinkExpression)
                     {

@@ -399,16 +399,30 @@ namespace Philips.Chatbots.Data.Models.Neural
             switch (res)
             {
                 case ExpEvalResultType.False:
-                    actionLink = FallbackAction;
+                    {
+                        if (FallbackAction == null)
+                            res = ExpEvalResultType.Empty;
+                        else
+                            actionLink = FallbackAction;
+
+                    }
                     break;
                 case ExpEvalResultType.True:
-                    actionLink = ForwardAction;
+                    {
+                        if (ForwardAction == null)
+                            res = ExpEvalResultType.Empty;
+                        else
+                            actionLink = ForwardAction;
+                    }
+                    break;
+                case ExpEvalResultType.Exception:
+                case ExpEvalResultType.Invalid:
+                    res = ExpEvalResultType.Invalid;
                     break;
                 default:
                     break;
             }
-            if (actionLink == null)
-                res = ExpEvalResultType.Empty;
+
             return res;
         }
 

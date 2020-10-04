@@ -72,6 +72,7 @@ namespace Philips.Chatbots.Engine.Session
             res = LinkHistory.TryPop(out top);
             if (res)
             {
+                LinkHistory.Push(top);  //Current link is to be recorded.
                 _currentLink = top;
                 CurrentState = ChatStateType.Start;
             }
@@ -103,7 +104,7 @@ namespace Philips.Chatbots.Engine.Session
         public async Task<int> HandleRequest(ITurnContext turnContext)
         {
             //First send back typing response and then process the request
-            var typingReply = turnContext.Activity.CreateReply(); 
+            var typingReply = turnContext.Activity.CreateReply();
             typingReply.Type = ActivityTypes.Typing;
             await turnContext.SendActivityAsync(typingReply);
             //await Task.Delay(1000);
