@@ -72,9 +72,7 @@ namespace Philips.Chatbots.Engine.Session
             res = LinkHistory.TryPop(out top);
             if (res)
             {
-                LinkHistory.Push(top);  //Current link is to be recorded.
-                _currentLink = top;
-                CurrentState = ChatStateType.Start;
+                StepForward(top);
             }
             return res;
         }

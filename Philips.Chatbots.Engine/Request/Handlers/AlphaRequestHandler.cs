@@ -1,4 +1,5 @@
-﻿using Microsoft.Bot.Builder;
+﻿using System;
+using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Philips.Chatbots.Data.Models.Neural;
 using Philips.Chatbots.Data.Models.Interfaces;
@@ -11,7 +12,6 @@ using Philips.Chatbots.Engine.Request.Extensions;
 using Philips.Chatbots.Data.Models;
 using static Philips.Chatbots.Database.Common.DbAlias;
 using System.Linq;
-using System;
 
 namespace Philips.Chatbots.Engine.Requst.Handlers
 {
