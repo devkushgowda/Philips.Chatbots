@@ -76,15 +76,15 @@ namespace Philips.Chatbots.Desktop.Portal.Data
         public static List<ILinkInfo> GetAllNeuralNodesLinks(LinkType[] ignore = null)
         {
             List<ILinkInfo> res = new List<ILinkInfo>();
-            var ignoreLink = (bool)ignore?.Contains(LinkType.NeuralLink);
+            var ignoreLink = ignore?.Contains(LinkType.NeuralLink) ?? false;
             if (!ignoreLink)
                 res.AddRange(DbLinkCollection.Find(x => true).ToList()?.Select(x => x as ILinkInfo).ToList());
 
-            var ignoreAction = (bool)ignore?.Contains(LinkType.ActionLink);
+            var ignoreAction = ignore?.Contains(LinkType.ActionLink) ?? false;
             if (!ignoreAction)
                 res.AddRange(DbActionCollection.Find(x => true).ToList()?.Select(x => x as ILinkInfo).ToList());
 
-            var ignoreResources = (bool)ignore?.Contains(LinkType.NeuralResource);
+            var ignoreResources = ignore?.Contains(LinkType.NeuralResource) ?? false;
             if (!ignoreResources)
                 res.AddRange(DbResourceCollection.Find(x => true).ToList()?.Select(x => x as ILinkInfo).ToList());
 

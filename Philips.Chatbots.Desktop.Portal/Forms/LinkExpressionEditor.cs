@@ -53,7 +53,7 @@ namespace Philips.Chatbots.Desktop.Portal
 
 
             var bindingSource = new BindingSource();
-            linkCache = DataProviders.GetAllNeuralNodesLinks(new LinkType[] { LinkType.NeuralResource });
+            linkCache = DataProviders.GetAllNeuralNodesLinks();
             bindingSource.DataSource = linkCache;
             DataGridViewComboBoxColumn dvCbxLinkId = new DataGridViewComboBoxColumn();
             dvCbxLinkId.HeaderText = "Result node";

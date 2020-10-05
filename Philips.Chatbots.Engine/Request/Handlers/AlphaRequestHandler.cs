@@ -252,9 +252,9 @@ namespace Philips.Chatbots.Engine.Requst.Handlers
         {
             var res = false;
             var curLink = requestState.CurrentLink;
-
             if (curLink?.NeuralExp != null)
             {
+                await SendReply(turnContext, curLink.ApplyFormat(curLink.Title));
                 if (curLink.NeuralExp.SkipEvaluation)
                 {
                     res = await EvaluateExpressionInput(turnContext, requestState);//Default expression

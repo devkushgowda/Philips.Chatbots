@@ -51,6 +51,7 @@ namespace Philips.Chatbots.Engine.Request.Extensions
             {
                 res.Location = Path.Combine(curDir, "resources", res.Location);
             }
+            var resTitle = res.ApplyFormat(res.Title);
             switch (res.Type)
             {
                 case ResourceType.ImagePNG:
@@ -59,7 +60,7 @@ namespace Philips.Chatbots.Engine.Request.Extensions
                     {
                         attachment = new HeroCard
                         {
-                            Title = res.Title,
+                            Title = resTitle,
                             Images = new List<CardImage> { new CardImage { Url = res.Location } }
                         }.ToAttachment();
                     }
@@ -67,7 +68,7 @@ namespace Philips.Chatbots.Engine.Request.Extensions
                 case ResourceType.Audio:
                     {
                         var audioCard = new AudioCard(media: new[] { new MediaUrl(res.Location) });
-                        audioCard.Title = res.Title;
+                        audioCard.Title = resTitle;
                         attachment = audioCard.ToAttachment();
                     }
                     break;
@@ -79,7 +80,7 @@ namespace Philips.Chatbots.Engine.Request.Extensions
                     {
                         attachment = new HeroCard
                         {
-                            Title = res.Title,
+                            Title = resTitle,
                             Buttons = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, title: $"Open {Enum.GetName(res.Type.GetType(), res.Type)}", value: res.Location) }
                         }.ToAttachment();
                     }
@@ -87,7 +88,7 @@ namespace Philips.Chatbots.Engine.Request.Extensions
                 case ResourceType.Video:
                     {
                         var videoCard = new VideoCard(media: new[] { new MediaUrl(res.Location) });
-                        videoCard.Title = res.Title;
+                        videoCard.Title = resTitle;
                         attachment = videoCard.ToAttachment();
                     }
                     break;
@@ -101,7 +102,7 @@ namespace Philips.Chatbots.Engine.Request.Extensions
 
         public static Activity BuildResourceResponse(this NeuralResourceModel neuralResourceModel, ITurnContext turnContext)
         {
-            Activity activity = turnContext.Activity.CreateReply(neuralResourceModel.ApplyFormat(neuralResourceModel.Title));
+            Activity activity = turnContext.Activity.CreateReply();
             activity.Attachments = new List<Attachment> { neuralResourceModel.GetResourceAttachment() };
             return activity;
         }

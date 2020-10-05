@@ -3,7 +3,6 @@ using MongoDB.Driver;
 using Philips.Chatbots.Data.Models;
 using Philips.Chatbots.Data.Models.Interfaces;
 using Philips.Chatbots.Data.Models.Neural;
-using Philips.Chatbots.Database.Common;
 using Philips.Chatbots.Database.Extension;
 using Philips.Chatbots.Database.MongoDB;
 using Philips.Chatbots.Desktop.Portal.Configuration;
@@ -373,8 +372,15 @@ namespace Philips.Chatbots.Desktop.Portal
                             break;
                         case MenuActionUnmapChild:
                             {
-                                await DbLinkCollection.UnLinkParentChild(neuralTree.SelectedNode.Parent.Name, neuralTree.SelectedNode.Name);
-                                neuralTree.SelectedNode.Remove();
+                                if (neuralTree.SelectedNode.Parent == null)
+                                {
+                                    await DbBotCollection.SetRootNodeById(BotAlphaName, null, cbxChatProfiles.Text);
+                                }
+                                else
+                                {
+                                    await DbLinkCollection.UnLinkParentChild(neuralTree.SelectedNode.Parent.Name, neuralTree.SelectedNode.Name);
+                                    neuralTree.SelectedNode.Remove();
+                                }
                                 ReloadTree();
                             }
                             break;
